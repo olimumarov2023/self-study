@@ -34,3 +34,24 @@ export interface ScoreTrendPoint {
   score: number;
   completedAt: string;
 }
+
+export interface HeatmapDay {
+  date: string;   // YYYY-MM-DD
+  count: number;
+  minutes: number;
+}
+
+export interface RadarDataPoint {
+  category: string;
+  actual: number;
+  target: number;
+}
+
+export interface ForecastData {
+  totalItems: number;
+  completedItems: number;
+  completionPercentage: number;
+  avgCompletionPerWeek: number;
+  estimatedWeeksRemaining: number | null;
+  estimatedCompletionDate: string | null;
+}

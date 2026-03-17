@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 
-import type { DayStats, WeekStats, MonthStats, CategoryProgress, ScoreTrendPoint } from '@/types/stats.types';
+import type { DayStats, WeekStats, MonthStats, CategoryProgress, ScoreTrendPoint, HeatmapDay, RadarDataPoint, ForecastData } from '@/types/stats.types';
 
 export interface ScoreTrendParams {
   learningItemId?: string;
@@ -23,4 +23,13 @@ export const statsApi = {
 
   getScoreTrend: (params?: ScoreTrendParams) =>
     apiClient.get<ScoreTrendPoint[]>('/stats/score-trend', { params }).then((r) => r.data),
+
+  getHeatmap: (year?: number) =>
+    apiClient.get<HeatmapDay[]>('/stats/heatmap', { params: year ? { year } : undefined }).then((r) => r.data),
+
+  getRadar: () =>
+    apiClient.get<RadarDataPoint[]>('/stats/radar').then((r) => r.data),
+
+  getForecast: () =>
+    apiClient.get<ForecastData>('/stats/forecast').then((r) => r.data),
 };

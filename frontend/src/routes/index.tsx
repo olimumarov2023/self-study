@@ -12,6 +12,10 @@ import { SettingsPage } from '@/pages/settings/settings-page';
 import { AssessmentsPage } from '@/pages/assessments/assessments-page';
 import { AssessmentRunPage } from '@/pages/assessments/assessment-run-page';
 import { AssessmentResultsPage } from '@/pages/assessments/assessment-results-page';
+import { RoadmapPage } from '@/pages/roadmap/roadmap-page';
+import { RemindersPage } from '@/pages/reminders/reminders-page';
+import { LibraryPage } from '@/pages/library/library-page';
+import { ResourceDetailPage } from '@/pages/library/resource-detail-page';
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +68,22 @@ export const router = createBrowserRouter([
           {
             path: 'assessments/:id/results',
             element: <AssessmentResultsPage />,
+          },
+          {
+            path: 'reminders',
+            element: <RemindersPage />,
+          },
+          {
+            path: 'roadmap',
+            element: <RoadmapPage />,
+          },
+          {
+            path: 'library',
+            element: <LibraryPage />,
+          },
+          {
+            path: 'library/:id',
+            element: <ResourceDetailPage />,
           },
         ],
       },

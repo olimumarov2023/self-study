@@ -9,6 +9,9 @@ import { StudyHoursSummary } from '@/components/stats/study-hours-summary';
 import { StreakDisplay } from '@/components/stats/streak-display';
 import { CategoryProgressChart } from '@/components/stats/category-progress-chart';
 import { ScoreTrendChart } from '@/components/stats/score-trend-chart';
+import { HeatmapCalendar } from '@/components/stats/heatmap-calendar';
+import { RadarChart } from '@/components/stats/radar-chart';
+import { CompletionForecast } from '@/components/stats/completion-forecast';
 import { useDayStats, useWeekStats, useMonthStats } from '@/queries/use-stats';
 
 import type { PeriodStats } from '@/types/stats.types';
@@ -185,6 +188,31 @@ export function StatsPage() {
         <div className="space-y-4">
           <CategoryProgressChart />
           <ScoreTrendChart />
+        </div>
+      </div>
+
+      {/* Activity heatmap */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Activity</h2>
+          <p className="text-sm text-muted-foreground">
+            Daily study sessions across the year.
+          </p>
+        </div>
+        <HeatmapCalendar />
+      </div>
+
+      {/* Category balance + Forecast */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Insights</h2>
+          <p className="text-sm text-muted-foreground">
+            Category balance and your projected completion date.
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <RadarChart />
+          <CompletionForecast />
         </div>
       </div>
     </div>

@@ -31,3 +31,15 @@ export const ScoreTrendQuerySchema = z.object({
 });
 
 export type ScoreTrendQueryDto = z.infer<typeof ScoreTrendQuerySchema>;
+
+export const HeatmapQuerySchema = z.object({
+  year: z
+    .string()
+    .optional()
+    .transform((val) => (val !== undefined ? parseInt(val, 10) : new Date().getUTCFullYear()))
+    .pipe(
+      z.number().int().min(2020, 'Year must be 2020 or later').max(2030, 'Year must be 2030 or earlier'),
+    ),
+});
+
+export type HeatmapQueryDto = z.infer<typeof HeatmapQuerySchema>;

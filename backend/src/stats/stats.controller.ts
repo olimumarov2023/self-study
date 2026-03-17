@@ -15,6 +15,7 @@ import {
   WeekQuerySchema,
   MonthQuerySchema,
   ScoreTrendQuerySchema,
+  HeatmapQuerySchema,
 } from './dto/stats-query.dto.js';
 
 import type {
@@ -22,6 +23,7 @@ import type {
   WeekQueryDto,
   MonthQueryDto,
   ScoreTrendQueryDto,
+  HeatmapQueryDto,
 } from './dto/stats-query.dto.js';
 
 @Controller('stats')
@@ -58,6 +60,16 @@ export class StatsController {
     return this.statsService.getCategoryProgress(userId);
   }
 
+  @Get('radar')
+  async radar(@CurrentUser() userId: string) {
+    return this.statsService.getRadarData(userId);
+  }
+
+  @Get('forecast')
+  async forecast(@CurrentUser() userId: string) {
+    return this.statsService.getForecast(userId);
+  }
+
   @Get('score-trend')
   async scoreTrend(
     @CurrentUser() userId: string,
@@ -69,5 +81,13 @@ export class StatsController {
       query.from,
       query.to,
     );
+  }
+
+  @Get('heatmap')
+  async heatmap(
+    @CurrentUser() userId: string,
+    @Query(new ZodValidationPipe(HeatmapQuerySchema)) query: HeatmapQueryDto,
+  ) {
+    return this.statsService.getHeatmapData(userId, query.year);
   }
 }

@@ -46,6 +46,31 @@ enum AssessmentStatus {
   FAILED
 }
 
+enum ResourceType {
+  BOOK
+  VIDEO
+}
+
+enum ResourceStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+enum SkillStatus {
+  LOCKED
+  AVAILABLE
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ReminderType {
+  DAILY_SUMMARY
+  SPACED_REP_DUE
+  STREAK_ALERT
+}
+
 model User {
   id              String            @id @default(cuid())
   email           String            @unique
@@ -62,6 +87,9 @@ model User {
   assessments       Assessment[]
   assessmentRuns    AssessmentRun[]
   spacedRepetitions SpacedRepetition[]
+  libraryResources  LibraryResource[]
+  resourceSessions  ResourceSession[]
+  reminders         Reminder[]
 }
 
 model Category {
@@ -73,8 +101,10 @@ model Category {
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningItems LearningItem[]
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningItems    LearningItem[]
+  libraryResources LibraryResource[]
+  roadmapSkills    RoadmapSkill[]
 
   @@unique([userId, name])
 }
@@ -184,4 +214,76 @@ model SpacedRepetition {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   learningItem  LearningItem   @relation(fields: [learningItemId], references: [id], onDelete: Cascade)
   assessmentRun AssessmentRun? @relation(fields: [assessmentRunId], references: [id])
+}
+
+model LibraryResource {
+  id             String         @id @default(cuid())
+  userId         String
+  type           ResourceType
+  title          String
+  author         String?
+  url            String?
+  totalPages     Int?
+  currentPage    Int?
+  totalMinutes   Int?
+  watchedMinutes Int?
+  status         ResourceStatus @default(NOT_STARTED)
+  categoryId     String?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sessions ResourceSession[]
+}
+
+model ResourceSession {
+  id           String   @id @default(cuid())
+  resourceId   String
+  userId       String
+  startPage    Int?
+  endPage      Int?
+  startMinute  Int?
+  endMinute    Int?
+  notes        String?
+  sessionDate  DateTime @default(now())
+  durationMin  Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  resource LibraryResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RoadmapArea {
+  id        String         @id @default(cuid())
+  name      String
+  icon      String?
+  sortOrder Int            @default(0)
+  skills    RoadmapSkill[]
+}
+
+model RoadmapSkill {
+  id          String      @id @default(cuid())
+  areaId      String
+  categoryId  String?
+  name        String
+  description String?
+  status      SkillStatus @default(LOCKED)
+  sortOrder   Int         @default(0)
+
+  area     RoadmapArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  category Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+}
+
+model Reminder {
+  id        String       @id @default(cuid())
+  userId    String
+  type      ReminderType
+  title     String
+  body      String
+  read      Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

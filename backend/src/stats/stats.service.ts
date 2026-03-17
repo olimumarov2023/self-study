@@ -7,6 +7,27 @@ import {
   formatDateUTC,
 } from '../common/utils/date.util.js';
 
+export interface HeatmapDay {
+  date: string;    // YYYY-MM-DD
+  count: number;   // total sessions (study + resource)
+  minutes: number; // total minutes
+}
+
+export interface RadarDataPoint {
+  category: string;
+  actual: number;
+  target: number;
+}
+
+export interface ForecastData {
+  totalItems: number;
+  completedItems: number;
+  completionPercentage: number;
+  avgCompletionPerWeek: number;
+  estimatedWeeksRemaining: number | null;
+  estimatedCompletionDate: string | null;
+}
+
 export interface CategoryProgress {
   categoryId: string;
   categoryName: string;
@@ -289,6 +310,150 @@ export class StatsService {
       score: run.score,
       completedAt: run.completedAt.toISOString(),
     }));
+  }
+
+  async getRadarData(userId: string): Promise<RadarDataPoint[]> {
+    // Fetch all categories that have at least one item for this user
+    const categories = await this.prisma.category.findMany({
+      where: { userId },
+      orderBy: { name: 'asc' },
+    });
+
+    const result: RadarDataPoint[] = [];
+
+    for (const category of categories) {
+      const [totalCount, completedCount] = await Promise.all([
+        this.prisma.learningItem.count({
+          where: { userId, categoryId: category.id },
+        }),
+        this.prisma.learningItem.count({
+          where: { userId, categoryId: category.id, status: 'LEARNED' },
+        }),
+      ]);
+
+      const actual =
+        totalCount > 0
+          ? Math.round((completedCount / totalCount) * 1000) / 10
+          : 0;
+
+      result.push({
+        category: category.name,
+        actual,
+        target: category.weightGoal ?? 20,
+      });
+    }
+
+    return result;
+  }
+
+  async getForecast(userId: string): Promise<ForecastData> {
+    const [totalItems, completedItems] = await Promise.all([
+      this.prisma.learningItem.count({ where: { userId } }),
+      this.prisma.learningItem.count({ where: { userId, status: 'LEARNED' } }),
+    ]);
+
+    const completionPercentage =
+      totalItems > 0
+        ? Math.round((completedItems / totalItems) * 1000) / 10
+        : 0;
+
+    // Count completions in the last 4 weeks
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setUTCDate(fourWeeksAgo.getUTCDate() - 28);
+
+    const recentlyLearned = await this.prisma.learningItem.count({
+      where: {
+        userId,
+        status: 'LEARNED',
+        updatedAt: { gte: fourWeeksAgo },
+      },
+    });
+
+    const avgCompletionPerWeek =
+      Math.round((recentlyLearned / 4) * 100) / 100;
+
+    if (avgCompletionPerWeek === 0) {
+      return {
+        totalItems,
+        completedItems,
+        completionPercentage,
+        avgCompletionPerWeek: 0,
+        estimatedWeeksRemaining: null,
+        estimatedCompletionDate: null,
+      };
+    }
+
+    const remaining = totalItems - completedItems;
+    const estimatedWeeksRemaining = Math.ceil(remaining / avgCompletionPerWeek);
+
+    const completionDate = new Date();
+    completionDate.setUTCDate(
+      completionDate.getUTCDate() + estimatedWeeksRemaining * 7,
+    );
+
+    return {
+      totalItems,
+      completedItems,
+      completionPercentage,
+      avgCompletionPerWeek,
+      estimatedWeeksRemaining,
+      estimatedCompletionDate: completionDate.toISOString(),
+    };
+  }
+
+  async getHeatmapData(userId: string, year: number): Promise<HeatmapDay[]> {
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    const yearEnd = new Date(Date.UTC(year + 1, 0, 1));
+
+    // Build the full map of every day in the year
+    const dayMap = new Map<string, { count: number; minutes: number }>();
+    const cursor = new Date(yearStart);
+    while (cursor < yearEnd) {
+      const key = cursor.toISOString().slice(0, 10);
+      dayMap.set(key, { count: 0, minutes: 0 });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    // StudySession: fetch all sessions for the year
+    const studySessions = await this.prisma.studySession.findMany({
+      where: {
+        userId,
+        startedAt: { gte: yearStart, lt: yearEnd },
+      },
+      select: { startedAt: true, durationMin: true },
+    });
+
+    for (const session of studySessions) {
+      const key = session.startedAt.toISOString().slice(0, 10);
+      const entry = dayMap.get(key);
+      if (entry) {
+        entry.count += 1;
+        entry.minutes += session.durationMin ?? 0;
+      }
+    }
+
+    // ResourceSession: fetch all resource sessions for the year
+    const resourceSessions = await this.prisma.resourceSession.findMany({
+      where: {
+        userId,
+        sessionDate: { gte: yearStart, lt: yearEnd },
+      },
+      select: { sessionDate: true, durationMin: true },
+    });
+
+    for (const session of resourceSessions) {
+      const key = session.sessionDate.toISOString().slice(0, 10);
+      const entry = dayMap.get(key);
+      if (entry) {
+        entry.count += 1;
+        entry.minutes += session.durationMin ?? 0;
+      }
+    }
+
+    // Return sorted array of all days
+    return Array.from(dayMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, { count, minutes }]) => ({ date, count, minutes }));
   }
 
   /**

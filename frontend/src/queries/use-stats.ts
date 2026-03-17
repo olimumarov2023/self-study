@@ -11,6 +11,9 @@ export const statsKeys = {
   month: (month: string) => [...statsKeys.all, 'month', month] as const,
   categoryProgress: () => [...statsKeys.all, 'category-progress'] as const,
   scoreTrend: (params?: ScoreTrendParams) => [...statsKeys.all, 'score-trend', params ?? {}] as const,
+  heatmap: (year?: number) => [...statsKeys.all, 'heatmap', year ?? 'current'] as const,
+  radar: () => [...statsKeys.all, 'radar'] as const,
+  forecast: () => [...statsKeys.all, 'forecast'] as const,
 };
 
 export function useDayStats(date: string) {
@@ -48,5 +51,26 @@ export function useScoreTrend(params?: ScoreTrendParams) {
   return useQuery({
     queryKey: statsKeys.scoreTrend(params),
     queryFn: () => statsApi.getScoreTrend(params),
+  });
+}
+
+export function useHeatmap(year?: number) {
+  return useQuery({
+    queryKey: statsKeys.heatmap(year),
+    queryFn: () => statsApi.getHeatmap(year),
+  });
+}
+
+export function useRadar() {
+  return useQuery({
+    queryKey: statsKeys.radar(),
+    queryFn: () => statsApi.getRadar(),
+  });
+}
+
+export function useForecast() {
+  return useQuery({
+    queryKey: statsKeys.forecast(),
+    queryFn: () => statsApi.getForecast(),
   });
 }

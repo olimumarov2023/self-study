@@ -12,6 +12,9 @@ import { StatsModule } from './stats/stats.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { AssessmentsModule } from './assessments/assessments.module.js';
 import { SpacedRepetitionModule } from './spaced-repetition/spaced-repetition.module.js';
+import { RoadmapModule } from './roadmap/roadmap.module.js';
+import { RemindersModule } from './reminders/reminders.module.js';
+import { LibraryModule } from './library/library.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -31,6 +34,9 @@ import { AppService } from './app.service.js';
     AiModule,
     AssessmentsModule,
     SpacedRepetitionModule,
+    RoadmapModule,
+    RemindersModule,
+    LibraryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

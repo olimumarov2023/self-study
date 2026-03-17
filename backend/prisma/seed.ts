@@ -43,6 +43,109 @@ async function main() {
     console.log(`Upserted category: ${category.name} (${category.id})`);
   }
 
+  // Roadmap areas and skills — only seed if none exist yet
+  const existingAreaCount = await prisma.roadmapArea.count();
+
+  if (existingAreaCount === 0) {
+    const roadmapAreas = [
+      {
+        name: 'Test Design',
+        icon: 'clipboard-list',
+        sortOrder: 1,
+        skills: [
+          'Test Case Design',
+          'Boundary Value Analysis',
+          'Equivalence Partitioning',
+          'Risk-Based Testing',
+          'Exploratory Testing',
+          'Test Planning',
+        ],
+      },
+      {
+        name: 'Automation',
+        icon: 'code-2',
+        sortOrder: 2,
+        skills: [
+          'Playwright Basics',
+          'Advanced Selectors',
+          'Page Object Model',
+          'CI/CD Integration',
+          'Visual Regression',
+          'API Test Automation',
+        ],
+      },
+      {
+        name: 'API Testing',
+        icon: 'globe',
+        sortOrder: 3,
+        skills: [
+          'REST API Fundamentals',
+          'Postman/Newman',
+          'GraphQL Testing',
+          'Authentication Testing',
+          'Contract Testing',
+          'Performance Baseline',
+        ],
+      },
+      {
+        name: 'Performance Testing',
+        icon: 'zap',
+        sortOrder: 4,
+        skills: [
+          'Load Testing Basics',
+          'k6 Fundamentals',
+          'Bottleneck Analysis',
+          'Stress Testing',
+          'Endurance Testing',
+        ],
+      },
+      {
+        name: 'Leadership',
+        icon: 'users',
+        sortOrder: 5,
+        skills: [
+          'Test Strategy Writing',
+          'Mentoring Juniors',
+          'Stakeholder Communication',
+          'QA Process Improvement',
+          'Defect Advocacy',
+        ],
+      },
+      {
+        name: 'Tools & Infrastructure',
+        icon: 'wrench',
+        sortOrder: 6,
+        skills: [
+          'Docker for Testing',
+          'Git Workflows',
+          'Monitoring & Alerting',
+          'Test Reporting',
+          'Database Testing',
+        ],
+      },
+    ];
+
+    for (const area of roadmapAreas) {
+      const created = await prisma.roadmapArea.create({
+        data: {
+          name: area.name,
+          icon: area.icon,
+          sortOrder: area.sortOrder,
+          skills: {
+            create: area.skills.map((skillName, index) => ({
+              name: skillName,
+              sortOrder: index + 1,
+              status: 'AVAILABLE',
+            })),
+          },
+        },
+      });
+      console.log(`Created roadmap area: ${created.name} with ${area.skills.length} skills`);
+    }
+  } else {
+    console.log(`Skipped roadmap seed — ${existingAreaCount} areas already exist.`);
+  }
+
   console.log('Seed completed successfully.');
 }
 
