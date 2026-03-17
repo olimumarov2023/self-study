@@ -9,6 +9,9 @@ import { PlannerPage } from '@/pages/planner/planner-page';
 import { BoardPage } from '@/pages/board/board-page';
 import { StatsPage } from '@/pages/stats/stats-page';
 import { SettingsPage } from '@/pages/settings/settings-page';
+import { AssessmentsPage } from '@/pages/assessments/assessments-page';
+import { AssessmentRunPage } from '@/pages/assessments/assessment-run-page';
+import { AssessmentResultsPage } from '@/pages/assessments/assessment-results-page';
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +52,18 @@ export const router = createBrowserRouter([
           {
             path: 'settings',
             element: <SettingsPage />,
+          },
+          {
+            path: 'assessments',
+            element: <AssessmentsPage />,
+          },
+          {
+            path: 'assessments/:id/run',
+            element: <AssessmentRunPage />,
+          },
+          {
+            path: 'assessments/:id/results',
+            element: <AssessmentResultsPage />,
           },
         ],
       },

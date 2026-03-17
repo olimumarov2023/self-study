@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   BookOpen,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/planner', label: 'Planner', icon: CalendarRange },
   { to: '/board', label: 'Board', icon: Kanban },
   { to: '/stats', label: 'Stats', icon: BarChart3 },
+  { to: '/assessments', label: 'Assessments', icon: ClipboardList },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 

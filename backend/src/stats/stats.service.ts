@@ -7,6 +7,27 @@ import {
   formatDateUTC,
 } from '../common/utils/date.util.js';
 
+export interface CategoryProgress {
+  categoryId: string;
+  categoryName: string;
+  itemCount: number;
+  completedCount: number;
+  needsRevisionCount: number;
+  totalStudyMinutes: number;
+  assessmentCount: number;
+  averageScore: number | null;
+  imbalanceFlag: boolean;
+}
+
+export interface ScoreTrendPoint {
+  assessmentId: string;
+  learningItemId: string;
+  learningItemTitle: string;
+  mode: string;
+  score: number;
+  completedAt: string;
+}
+
 export interface PeriodStats {
   date?: string;
   week?: string;
@@ -147,6 +168,127 @@ export class StatsService {
 
     ranges.push({ start: rangeStart, end: rangeEnd });
     return ranges;
+  }
+
+  async getCategoryProgress(userId: string): Promise<CategoryProgress[]> {
+    // 1. Fetch all categories for the user
+    const categories = await this.prisma.category.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // 2. Count total user assessmentRuns to decide imbalanceFlag threshold
+    const totalAssessmentRuns = await this.prisma.assessmentRun.count({
+      where: { userId },
+    });
+    const hasEnoughAssessments = totalAssessmentRuns >= 5;
+
+    // 3. Per-category: count items, sessions sum, assessmentRun aggregates
+    const result: CategoryProgress[] = [];
+
+    for (const category of categories) {
+      // Item counts
+      const [itemCount, completedCount, needsRevisionCount] = await Promise.all([
+        this.prisma.learningItem.count({
+          where: { userId, categoryId: category.id },
+        }),
+        this.prisma.learningItem.count({
+          where: { userId, categoryId: category.id, status: 'LEARNED' },
+        }),
+        this.prisma.learningItem.count({
+          where: { userId, categoryId: category.id, status: 'NEEDS_REVISION' },
+        }),
+      ]);
+
+      // Study minutes for sessions linked to items in this category
+      const sessionAgg = await this.prisma.studySession.aggregate({
+        where: {
+          userId,
+          learningItem: { categoryId: category.id },
+        },
+        _sum: { durationMin: true },
+      });
+      const totalStudyMinutes = sessionAgg._sum.durationMin ?? 0;
+
+      // AssessmentRun aggregates via assessment -> learningItem.categoryId
+      const runAgg = await this.prisma.assessmentRun.aggregate({
+        where: {
+          userId,
+          assessment: { learningItem: { categoryId: category.id } },
+        },
+        _count: { id: true },
+        _avg: { score: true },
+      });
+      const assessmentCount = runAgg._count.id;
+      const averageScore =
+        runAgg._avg.score !== null
+          ? Math.round(runAgg._avg.score * 100) / 100
+          : null;
+
+      const imbalanceFlag =
+        itemCount > 2 && assessmentCount === 0 && hasEnoughAssessments;
+
+      result.push({
+        categoryId: category.id,
+        categoryName: category.name,
+        itemCount,
+        completedCount,
+        needsRevisionCount,
+        totalStudyMinutes,
+        assessmentCount,
+        averageScore,
+        imbalanceFlag,
+      });
+    }
+
+    return result;
+  }
+
+  async getScoreTrend(
+    userId: string,
+    learningItemId?: string,
+    from?: string,
+    to?: string,
+  ): Promise<ScoreTrendPoint[]> {
+    const completedAtFilter: { gte?: Date; lte?: Date } = {};
+    if (from) {
+      completedAtFilter.gte = new Date(from + 'T00:00:00.000Z');
+    }
+    if (to) {
+      completedAtFilter.lte = new Date(to + 'T23:59:59.999Z');
+    }
+
+    const runs = await this.prisma.assessmentRun.findMany({
+      where: {
+        userId,
+        ...(Object.keys(completedAtFilter).length > 0 && {
+          completedAt: completedAtFilter,
+        }),
+        ...(learningItemId && {
+          assessment: { learningItemId },
+        }),
+      },
+      include: {
+        assessment: {
+          select: {
+            mode: true,
+            learningItemId: true,
+            learningItem: { select: { title: true } },
+          },
+        },
+      },
+      orderBy: { completedAt: 'asc' },
+      take: 100,
+    });
+
+    return runs.map((run) => ({
+      assessmentId: run.assessmentId,
+      learningItemId: run.assessment.learningItemId,
+      learningItemTitle: run.assessment.learningItem.title,
+      mode: run.assessment.mode,
+      score: run.score,
+      completedAt: run.completedAt.toISOString(),
+    }));
   }
 
   /**

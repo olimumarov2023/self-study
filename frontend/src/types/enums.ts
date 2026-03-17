@@ -33,6 +33,15 @@ export const AssessmentMode = {
 } as const;
 export type AssessmentMode = (typeof AssessmentMode)[keyof typeof AssessmentMode];
 
+export const AssessmentStatus = {
+  GENERATING: 'GENERATING',
+  READY: 'READY',
+  SUBMITTED: 'SUBMITTED',
+  EVALUATED: 'EVALUATED',
+  FAILED: 'FAILED',
+} as const;
+export type AssessmentStatus = (typeof AssessmentStatus)[keyof typeof AssessmentStatus];
+
 export const ResourceType = {
   BOOK: 'BOOK',
   VIDEO: 'VIDEO',

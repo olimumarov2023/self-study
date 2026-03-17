@@ -7,6 +7,8 @@ import { CompletionDonut } from '@/components/stats/completion-donut';
 import { PlannedVsCompleted } from '@/components/stats/planned-vs-completed';
 import { StudyHoursSummary } from '@/components/stats/study-hours-summary';
 import { StreakDisplay } from '@/components/stats/streak-display';
+import { CategoryProgressChart } from '@/components/stats/category-progress-chart';
+import { ScoreTrendChart } from '@/components/stats/score-trend-chart';
 import { useDayStats, useWeekStats, useMonthStats } from '@/queries/use-stats';
 
 import type { PeriodStats } from '@/types/stats.types';
@@ -170,6 +172,21 @@ export function StatsPage() {
           <StreakDisplay streak={stats.streak} />
         </div>
       )}
+
+      {/* Learning Analytics */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Learning Analytics</h2>
+          <p className="text-sm text-muted-foreground">
+            Understand how your effort is distributed across categories and how your scores change over time.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <CategoryProgressChart />
+          <ScoreTrendChart />
+        </div>
+      </div>
     </div>
   );
 }

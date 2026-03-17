@@ -2,11 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 
 import { statsApi } from '@/api/stats.api';
 
+import type { ScoreTrendParams } from '@/api/stats.api';
+
 export const statsKeys = {
   all: ['stats'] as const,
   day: (date: string) => [...statsKeys.all, 'day', date] as const,
   week: (week: string) => [...statsKeys.all, 'week', week] as const,
   month: (month: string) => [...statsKeys.all, 'month', month] as const,
+  categoryProgress: () => [...statsKeys.all, 'category-progress'] as const,
+  scoreTrend: (params?: ScoreTrendParams) => [...statsKeys.all, 'score-trend', params ?? {}] as const,
 };
 
 export function useDayStats(date: string) {
@@ -30,5 +34,19 @@ export function useMonthStats(month: string) {
     queryKey: statsKeys.month(month),
     queryFn: () => statsApi.getMonthStats(month),
     enabled: !!month,
+  });
+}
+
+export function useCategoryProgress() {
+  return useQuery({
+    queryKey: statsKeys.categoryProgress(),
+    queryFn: () => statsApi.getCategoryProgress(),
+  });
+}
+
+export function useScoreTrend(params?: ScoreTrendParams) {
+  return useQuery({
+    queryKey: statsKeys.scoreTrend(params),
+    queryFn: () => statsApi.getScoreTrend(params),
   });
 }

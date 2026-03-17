@@ -6,6 +6,8 @@ import { TodayItemsList } from '@/components/dashboard/today-items-list';
 import { QuickActions } from '@/components/dashboard/quick-actions';
 import { RecentSessions } from '@/components/timer/recent-sessions';
 import { QuickAddModal } from '@/components/learning-items/quick-add-modal';
+import { DueList } from '@/components/spaced-repetition/due-list';
+import { ReviewSchedule } from '@/components/spaced-repetition/review-schedule';
 import { useCreateLearningItem } from '@/queries/use-learning-items';
 import { useStartSession } from '@/queries/use-time-tracking';
 import { useTimerStore } from '@/stores/timer.store';
@@ -52,6 +54,12 @@ export function DashboardPage() {
 
           {/* Today's items */}
           <TodayItemsList items={allItems} />
+
+          {/* Spaced repetition — due today */}
+          <DueList />
+
+          {/* Spaced repetition — upcoming schedule */}
+          <ReviewSchedule />
 
           {/* Quick actions */}
           <QuickActions

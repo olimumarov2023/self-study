@@ -38,7 +38,8 @@
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h 127.0.0.1 -c \"\\\\conninfo\")",
       "Read(//tmp/**)",
       "Bash(tasklist /FI \"PID eq 5992\")",
-      "Bash(taskkill //PID 5992 //F)"
+      "Bash(taskkill //PID 5992 //F)",
+      "Bash(find /c/Personal/self-study/frontend/src/pages -type f -name *.tsx)"
     ],
     "additionalDirectories": [
       "c:\\Personal\\self-study\\.claude",

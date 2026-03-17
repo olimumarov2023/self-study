@@ -17,3 +17,17 @@ export const MonthQuerySchema = z.object({
 });
 
 export type MonthQueryDto = z.infer<typeof MonthQuerySchema>;
+
+export const ScoreTrendQuerySchema = z.object({
+  learningItemId: z.string().optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected format: YYYY-MM-DD')
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected format: YYYY-MM-DD')
+    .optional(),
+});
+
+export type ScoreTrendQueryDto = z.infer<typeof ScoreTrendQuerySchema>;

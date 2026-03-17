@@ -9,6 +9,9 @@ import { PlanningModule } from './planning/planning.module.js';
 import { BoardModule } from './board/board.module.js';
 import { TimeTrackingModule } from './time-tracking/time-tracking.module.js';
 import { StatsModule } from './stats/stats.module.js';
+import { AiModule } from './ai/ai.module.js';
+import { AssessmentsModule } from './assessments/assessments.module.js';
+import { SpacedRepetitionModule } from './spaced-repetition/spaced-repetition.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -25,6 +28,9 @@ import { AppService } from './app.service.js';
     BoardModule,
     TimeTrackingModule,
     StatsModule,
+    AiModule,
+    AssessmentsModule,
+    SpacedRepetitionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

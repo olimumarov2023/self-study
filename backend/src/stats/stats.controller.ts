@@ -14,12 +14,14 @@ import {
   DayQuerySchema,
   WeekQuerySchema,
   MonthQuerySchema,
+  ScoreTrendQuerySchema,
 } from './dto/stats-query.dto.js';
 
 import type {
   DayQueryDto,
   WeekQueryDto,
   MonthQueryDto,
+  ScoreTrendQueryDto,
 } from './dto/stats-query.dto.js';
 
 @Controller('stats')
@@ -49,5 +51,23 @@ export class StatsController {
     @Query(new ZodValidationPipe(MonthQuerySchema)) query: MonthQueryDto,
   ) {
     return this.statsService.getMonthStats(userId, query.month);
+  }
+
+  @Get('category-progress')
+  async categoryProgress(@CurrentUser() userId: string) {
+    return this.statsService.getCategoryProgress(userId);
+  }
+
+  @Get('score-trend')
+  async scoreTrend(
+    @CurrentUser() userId: string,
+    @Query(new ZodValidationPipe(ScoreTrendQuerySchema)) query: ScoreTrendQueryDto,
+  ) {
+    return this.statsService.getScoreTrend(
+      userId,
+      query.learningItemId,
+      query.from,
+      query.to,
+    );
   }
 }
