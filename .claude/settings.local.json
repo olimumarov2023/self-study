@@ -1,7 +1,48 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest add button card input dialog dropdown-menu sheet separator badge --yes)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx shadcn@latest add tooltip --yes)",
+      "Bash(node -e \"const z = require\\(''zod''\\); const r = z.string\\(\\).safeParse\\(123\\); console.log\\(Object.keys\\(r.error\\)\\); console.log\\(JSON.stringify\\(r.error.issues ?? r.error.errors ?? ''neither''\\)\\)\")",
+      "Bash(node -e \"const z = require\\(''zod''\\); const r = z.string\\(\\).safeParse\\(123\\); console.log\\(r.error.issues\\); console.log\\(typeof r.error.issues\\)\")",
+      "Bash(node -e \"const z = require\\(''zod''\\); const e = new z.ZodError\\([]\\); console.log\\(''issues'' in e, ''errors'' in e\\)\")",
+      "Bash(npx shadcn@latest add label -y)",
+      "Bash(npx shadcn@latest add select textarea slider popover -y)",
+      "Bash(npx shadcn@latest add tabs --yes)",
+      "Bash(npx shadcn@latest add progress --yes)",
+      "Bash(npx shadcn@latest add progress)",
+      "Bash(node -e \"console.log\\(require\\(''msw/package.json''\\).version\\)\")",
+      "Bash(npx ts-jest:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''''include'''',''''\\(not set\\)''''\\)\\)\")",
+      "Bash(npx vitest:*)",
+      "Bash(where psql:*)",
+      "Bash(docker --version)",
+      "Bash(docker info:*)",
+      "Bash(docker run:*)",
+      "Bash(docker context:*)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist)",
+      "Bash(tasklist /FI \"PID eq 6848\")",
+      "Bash(psql -U postgres -h localhost -c \"\\\\l\")",
+      "Read(//c/Program Files/PostgreSQL/**)",
+      "Bash(PGPASSWORD=postgresql \"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h localhost -c \"\\\\l\")",
+      "Bash(net stop:*)",
+      "Bash(net start:*)",
+      "Bash(sc query:*)",
+      "Bash(PGPASSWORD= \"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h localhost -c \"ALTER USER postgres PASSWORD ''postgres'';\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql\" -U postgres -h 127.0.0.1 -c \"\\\\conninfo\")",
+      "Read(//tmp/**)",
+      "Bash(tasklist /FI \"PID eq 5992\")",
+      "Bash(taskkill //PID 5992 //F)"
+    ],
     "additionalDirectories": [
-      "c:\\Personal\\self-study\\.claude"
+      "c:\\Personal\\self-study\\.claude",
+      "C:\\Program Files\\PostgreSQL\\18\\data"
     ]
   }
 }

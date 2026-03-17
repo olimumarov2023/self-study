@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx @nestjs/cli new backend --package-manager npm --skip-git)"
+    ]
+  }
+}
