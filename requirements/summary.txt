@@ -1,0 +1,149 @@
+# Self-Study Platform - Requirements Document
+
+## 1. Overview
+Personal learning platform for structured self-study with AI-powered assessments.
+Single user. Goal: track learning from backlog to mastery with spaced repetition.
+Target workflow: capture → schedule → learn → assess → improve.
+
+---
+
+## 2. Core Features
+
+### 2.1 Learning Backlog & Planning
+Users can add learning items with: title, description, notes, category, priority
+(Low/Medium/High), difficulty (1-5), estimated hours, resource links, tags,
+target role, status, due date, repeat flag.
+
+Four planning levels: Backlog → Monthly → Weekly → Daily.
+
+Acceptance criteria:
+- User can create, edit, delete learning items
+- User can assign items from backlog to monthly plan
+- User can distribute monthly items across weeks
+- User can distribute weekly items across days
+- Auto-distribute feature splits N items across M days evenly
+- Unfinished daily items carry over to the next day
+
+### 2.2 Kanban Board
+Columns: To Learn, Planned, In Progress, Learned, Needs Revision.
+
+Acceptance criteria:
+- Drag-and-drop between columns updates item status
+- Quick filters by category, date, difficulty, role
+- Board reflects current day/week scope
+
+### 2.3 Dashboard ("Today Focus")
+Shows today's planned items, active timer, quick actions, spaced repetition
+items due for review.
+
+Acceptance criteria:
+- Automatically shows items assigned to today's date
+- One-click actions: add topic, start timer, start exam
+- Shows spaced repetition items due for review
+- "Today Focus" widget auto-changes by date
+
+### 2.4 AI-Powered Assessments (Claude)
+Modes: Quiz (MCQ), Q&A (open-ended), Practical Task, Flashcards,
+Bug Analysis, Teach-back ("Explain this as if to junior").
+
+Acceptance criteria:
+- When item moves to Learned, user can create assessment on same page or separate tab
+- User selects a learned topic, mode, difficulty, question count, and optional comment
+- System generates assessment via Claude API
+- User submits answers; system evaluates and stores:
+  - score
+  - weak concepts
+  - missed questions
+  - confidence estimate
+  - revision recommendations
+- Auto-creates follow-up tasks for weak areas
+
+### 2.5 Spaced Repetition
+Score-based review scheduling after assessments:
+- Low score → review in 1 day
+- Medium score → review in 3 days
+- High score → review in 7+ days
+
+Acceptance criteria:
+- After each assessment, system calculates next review date
+- Dashboard shows items due for review
+- Review intervals increase with consecutive good scores (SM-2 style ease factor)
+- Users can view upcoming review schedule as a calendar
+
+### 2.6 Statistics & Progress Tracking
+Metrics:
+- Completion % overall and by category
+- Planned vs completed (daily/weekly/monthly)
+- Study hours (actual vs target)
+- Assessment score trend
+- Retention trend (post-revision)
+- Consistency streak (days studied in a row)
+- Forecast: "At current pace, role completion in X months"
+
+Views:
+- Calendar heatmap (GitHub-style)
+- Burndown chart for monthly plan
+- Radar chart by categories
+- Timeline of what learned each day/week/month/quarter/year
+- Role progress bar (10/30 skills complete = 33%)
+
+Acceptance criteria:
+- Stats available at day/week/month/quarter/year granularity
+- Role progress shows X/Y skills completed with percentage
+- Category distribution compared against target weights
+
+### 2.7 Library (Books & Videos)
+Track books (pages) and videos (timestamps) with reading/watching sessions.
+
+Books:
+- Add by folder scan or manual upload metadata
+- Card shows: title, author, pages, progress %
+- Track reading sessions (Day 1: p1-20, Day 2: p21-30)
+- "Continue reading from page 31" button
+
+Videos:
+- Add link (YouTube, local, etc.)
+- Track: last watched timestamp, watched segments, notes/bookmarks
+- "Resume from 12:34"
+
+Acceptance criteria:
+- User can add resources with metadata (title, type, total pages/duration)
+- User can log sessions (from page X to page Y, or from time X to time Y)
+- "Resume from..." button shows last position
+- Notes and highlights per session
+- "Convert note to backlog topic" button
+- Daily reading/video goals
+
+### 2.8 Time Tracking
+Modes: start/stop timer, Pomodoro (25/5 or custom), manual entry correction.
+
+Acceptance criteria:
+- Timer can be linked to a specific learning item
+- Analytics show hours by day/week/month and by category
+- Deep work session tracking
+- Planned vs actual time comparison
+
+### 2.9 Category-Based Progress
+Categories with optional target weight (e.g., 40% Automation, 20% Mindset).
+
+Acceptance criteria:
+- Actual distribution tracked against targets
+- Imbalance alerts when actual distribution deviates ("Too little Soft Skills this month")
+- Visual breakdown of time/items per category
+
+---
+
+## 3. Non-Functional Requirements
+- Single-user personal app (authentication simplified or optional in Phase 1)
+- Dark mode support
+- Mobile-first responsive layout
+- Keyboard shortcuts for power usage
+- Minimal clicks: "capture → schedule → learn → assess → improve"
+- Clean dashboard with 3 blocks: Today, This Week, Progress
+
+---
+
+## 4. Phased Delivery
+- Phase 1 (MVP): Backlog CRUD, Kanban, planning, today dashboard, basic timer, basic stats
+- Phase 2: AI assessments (all 6 modes), score history, spaced repetition, category analytics
+- Phase 3: Library, advanced analytics, role roadmap, reminders
