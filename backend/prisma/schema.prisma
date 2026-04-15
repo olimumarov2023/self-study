@@ -90,6 +90,7 @@ model User {
   libraryResources  LibraryResource[]
   resourceSessions  ResourceSession[]
   reminders         Reminder[]
+  studyBooks        StudyBook[]
 }
 
 model Category {
@@ -286,4 +287,51 @@ model Reminder {
   createdAt DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum StudyBookStatus {
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+model StudyBook {
+  id          String          @id @default(cuid())
+  userId      String
+  title       String
+  author      String?
+  description String?
+  status      StudyBookStatus @default(IN_PROGRESS)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapters StudyChapter[]
+
+  @@unique([userId, title])
+}
+
+model StudyChapter {
+  id        String   @id @default(cuid())
+  bookId    String
+  title     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  book   StudyBook    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  topics StudyTopic[]
+}
+
+model StudyTopic {
+  id        String    @id @default(cuid())
+  chapterId String
+  title     String
+  notes     String?
+  learned   Boolean   @default(false)
+  learnedAt DateTime?
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  chapter StudyChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 }

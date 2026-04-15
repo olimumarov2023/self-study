@@ -93,7 +93,7 @@ export function DueList() {
                   <Button
                     size="sm"
                     className="ml-3 shrink-0"
-                    onClick={() => navigate(`/assessments?item=${item.learningItemId}`)}
+                    onClick={() => navigate(`/workspace`)}
                   >
                     <BookOpen className="mr-1.5 h-3.5 w-3.5" />
                     Review Now

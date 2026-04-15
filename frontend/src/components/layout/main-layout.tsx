@@ -5,26 +5,20 @@ import {
   BarChart3,
   Settings,
   BookOpen,
-  ClipboardList,
+  GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { TimerWidget } from '@/components/timer/timer-widget';
-import { useActiveSession } from '@/queries/use-time-tracking';
 
 const navItems = [
   { to: '/workspace', label: 'Workspace', icon: CalendarRange },
   { to: '/board', label: 'Board', icon: Kanban },
+  { to: '/study-tracker', label: 'Study Tracker', icon: GraduationCap },
   { to: '/stats', label: 'Stats', icon: BarChart3 },
-  { to: '/assessments', label: 'Assessments', icon: ClipboardList },
-
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function MainLayout() {
-  // Restore active session on mount
-  useActiveSession();
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
@@ -62,9 +56,7 @@ export function MainLayout() {
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header bar */}
-        <header className="flex h-14 items-center justify-end gap-2 border-b px-6">
-          <TimerWidget />
-        </header>
+        <header className="flex h-14 items-center justify-end gap-2 border-b px-6" />
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>

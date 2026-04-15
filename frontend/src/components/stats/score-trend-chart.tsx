@@ -176,7 +176,7 @@ export function ScoreTrendChart() {
         {header}
         <CardContent>
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Complete assessments to see your score trend.
+            No score data available yet.
           </p>
         </CardContent>
       </Card>

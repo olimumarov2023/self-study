@@ -15,6 +15,7 @@ import { SpacedRepetitionModule } from './spaced-repetition/spaced-repetition.mo
 import { RoadmapModule } from './roadmap/roadmap.module.js';
 import { RemindersModule } from './reminders/reminders.module.js';
 import { LibraryModule } from './library/library.module.js';
+import { StudyTrackerModule } from './study-tracker/study-tracker.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -37,6 +38,7 @@ import { AppService } from './app.service.js';
     RoadmapModule,
     RemindersModule,
     LibraryModule,
+    StudyTrackerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

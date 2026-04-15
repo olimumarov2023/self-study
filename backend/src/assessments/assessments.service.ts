@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, HttpException } from '@nestjs/common';
 import { AssessmentStatus, LearnStatus } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -49,9 +49,9 @@ export class AssessmentsService {
           status: AssessmentStatus.FAILED,
         },
       });
-      throw error instanceof InternalServerErrorException
+      throw error instanceof HttpException
         ? error
-        : new InternalServerErrorException('AI generation failed');
+        : new InternalServerErrorException(`AI generation failed: ${(error as Error).message}`);
     }
 
     return this.prisma.assessment.create({
