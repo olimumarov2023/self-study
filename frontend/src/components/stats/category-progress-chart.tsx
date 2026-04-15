@@ -1,5 +1,4 @@
 import {
-  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -157,7 +156,7 @@ export function CategoryProgressChart() {
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="name"
-                tick={(props: CustomTickProps) => <CategoryTick {...props} imbalanceSet={imbalanceSet} />}
+                tick={(props: any) => <CategoryTick {...props} imbalanceSet={imbalanceSet} />}
                 interval={0}
                 height={48}
               />

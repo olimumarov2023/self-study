@@ -21,8 +21,6 @@ import {
 import { useScoreTrend } from '@/queries/use-stats';
 
 import type { ScoreTrendPoint } from '@/types/stats.types';
-import type { TooltipProps } from 'recharts';
-import type { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 
 const PASSING_THRESHOLD = 70;
 const ALL_ITEMS_VALUE = '__all__';
@@ -39,7 +37,7 @@ function ChartSkeleton() {
 // ---------------------------------------------------------------------------
 // Custom tooltip
 // ---------------------------------------------------------------------------
-function ScoreTooltip({ active, payload }: TooltipProps<ValueType, NameType>) {
+function ScoreTooltip({ active, payload }: any) {
   if (!active || !payload || payload.length === 0) return null;
 
   const point = payload[0]?.payload as ChartPoint | undefined;

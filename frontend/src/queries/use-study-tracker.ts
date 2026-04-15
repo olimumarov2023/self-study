@@ -86,17 +86,10 @@ export function useCreateChapter() {
 export function useUpdateChapter() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      bookId,
-      payload,
-    }: {
-      id: string;
-      bookId: string;
-      payload: UpdateChapterPayload;
-    }) => studyTrackerApi.updateChapter(id, payload),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { id: string; bookId: string; payload: UpdateChapterPayload }) =>
+      studyTrackerApi.updateChapter(vars.id, vars.payload),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
       queryClient.invalidateQueries({ queryKey: studyTrackerKeys.lists() });
     },
   });
@@ -105,10 +98,10 @@ export function useUpdateChapter() {
 export function useDeleteChapter() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, bookId }: { id: string; bookId: string }) =>
-      studyTrackerApi.deleteChapter(id),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { id: string; bookId: string }) =>
+      studyTrackerApi.deleteChapter(vars.id),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
       queryClient.invalidateQueries({ queryKey: studyTrackerKeys.lists() });
     },
   });
@@ -117,17 +110,10 @@ export function useDeleteChapter() {
 export function useCreateTopic() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      chapterId,
-      bookId,
-      payload,
-    }: {
-      chapterId: string;
-      bookId: string;
-      payload: CreateTopicPayload;
-    }) => studyTrackerApi.createTopic(chapterId, payload),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { chapterId: string; bookId: string; payload: CreateTopicPayload }) =>
+      studyTrackerApi.createTopic(vars.chapterId, vars.payload),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
       queryClient.invalidateQueries({ queryKey: studyTrackerKeys.lists() });
     },
   });
@@ -136,17 +122,10 @@ export function useCreateTopic() {
 export function useUpdateTopic() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      bookId,
-      payload,
-    }: {
-      id: string;
-      bookId: string;
-      payload: UpdateTopicPayload;
-    }) => studyTrackerApi.updateTopic(id, payload),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { id: string; bookId: string; payload: UpdateTopicPayload }) =>
+      studyTrackerApi.updateTopic(vars.id, vars.payload),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
     },
   });
 }
@@ -154,10 +133,10 @@ export function useUpdateTopic() {
 export function useDeleteTopic() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, bookId }: { id: string; bookId: string }) =>
-      studyTrackerApi.deleteTopic(id),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { id: string; bookId: string }) =>
+      studyTrackerApi.deleteTopic(vars.id),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
       queryClient.invalidateQueries({ queryKey: studyTrackerKeys.lists() });
     },
   });
@@ -166,10 +145,10 @@ export function useDeleteTopic() {
 export function useToggleTopicLearned() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, bookId }: { id: string; bookId: string }) =>
-      studyTrackerApi.toggleTopicLearned(id),
-    onSuccess: (_data, { bookId }) => {
-      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(bookId) });
+    mutationFn: (vars: { id: string; bookId: string }) =>
+      studyTrackerApi.toggleTopicLearned(vars.id),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: studyTrackerKeys.detail(vars.bookId) });
       queryClient.invalidateQueries({ queryKey: studyTrackerKeys.lists() });
     },
   });

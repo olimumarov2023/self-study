@@ -52,7 +52,7 @@ function boardItemToLearningItem(item: BoardItem): LearningItem {
     tags: item.tags,
     createdAt: '',
     updatedAt: '',
-    category: item.category ? { ...item.category } : null,
+    category: item.category ? { id: item.category.id, userId: '', name: item.category.name, color: item.category.color, weightGoal: null, createdAt: '', updatedAt: '' } : null,
   };
 }
 

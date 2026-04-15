@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { BookStatusBadge } from './book-status-badge';
 import { ChapterSection } from './chapter-section';
 import { InlineInput } from './inline-input';
 import { useStudyBook, useCreateChapter, useUpdateBook } from '@/queries/use-study-tracker';
