@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
 const navItems = [
-  { to: '/workspace', label: 'Workspace', icon: CalendarRange },
   { to: '/board', label: 'Board', icon: Kanban },
+  { to: '/workspace', label: 'Plan', icon: CalendarRange },
   { to: '/study-tracker', label: 'Study Tracker', icon: GraduationCap },
   { to: '/stats', label: 'Stats', icon: BarChart3 },
   { to: '/settings', label: 'Settings', icon: Settings },

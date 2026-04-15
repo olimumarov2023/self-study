@@ -23,7 +23,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <WorkspacePage />,
+            element: <BoardPage />,
           },
           {
             path: 'workspace',
