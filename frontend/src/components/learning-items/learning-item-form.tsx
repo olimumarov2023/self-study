@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCategories } from '@/queries/use-categories';
+import { LearnStatus } from '@/types/enums';
 
 import type { FormEvent } from 'react';
 import type { LearningItem, UpdateLearningItemPayload } from '@/types/learning-item.types';
+
+const STATUS_OPTIONS = [
+  { value: LearnStatus.TO_LEARN, label: 'To Learn' },
+  { value: LearnStatus.PLANNED, label: 'Planned' },
+  { value: LearnStatus.IN_PROGRESS, label: 'In Progress' },
+  { value: LearnStatus.LEARNED, label: 'Learned' },
+  { value: LearnStatus.NEEDS_REVISION, label: 'Needs Revision' },
+];
 
 interface LearningItemFormProps {
   open: boolean;
@@ -47,13 +56,17 @@ export function LearningItemForm({
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? '');
   const [categoryId, setCategoryId] = useState(item.categoryId ?? 'NONE');
+  const [status, setStatus] = useState(item.status);
+
+  // Sync state when a different item is opened
+  useEffect(() => {
+    setTitle(item.title);
+    setDescription(item.description ?? '');
+    setCategoryId(item.categoryId ?? 'NONE');
+    setStatus(item.status);
+  }, [item.id, item.title, item.description, item.categoryId, item.status]);
 
   function handleOpenChange(nextOpen: boolean) {
-    if (nextOpen) {
-      setTitle(item.title);
-      setDescription(item.description ?? '');
-      setCategoryId(item.categoryId ?? 'NONE');
-    }
     onOpenChange(nextOpen);
   }
 
@@ -65,6 +78,7 @@ export function LearningItemForm({
       title: title.trim(),
       description: description || undefined,
       categoryId: categoryId === 'NONE' ? null : categoryId,
+      status,
     };
 
     onSubmit(item.id, payload);
@@ -102,29 +116,47 @@ export function LearningItemForm({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="li-category">Category</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="li-category">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NONE">No Category</SelectItem>
-                {categories?.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    <span className="flex items-center gap-2">
-                      {cat.color && (
-                        <span
-                          className="inline-block h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: cat.color }}
-                        />
-                      )}
-                      {cat.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="li-category">Category</Label>
+              <Select value={categoryId} onValueChange={setCategoryId}>
+                <SelectTrigger id="li-category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">No Category</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <span className="flex items-center gap-2">
+                        {cat.color && (
+                          <span
+                            className="inline-block h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                        )}
+                        {cat.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="li-status">Status</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as LearnStatus)}>
+                <SelectTrigger id="li-status">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

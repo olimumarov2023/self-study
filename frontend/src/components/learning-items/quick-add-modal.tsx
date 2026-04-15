@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -40,10 +41,12 @@ export function QuickAddModal({
   const { data: categories } = useCategories();
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
 
   function resetForm() {
     setTitle('');
+    setDescription('');
     setCategoryId('');
   }
 
@@ -59,6 +62,10 @@ export function QuickAddModal({
     const payload: CreateLearningItemPayload = {
       title: title.trim(),
     };
+
+    if (description.trim()) {
+      payload.description = description.trim();
+    }
 
     if (categoryId) {
       payload.categoryId = categoryId;
@@ -86,6 +93,17 @@ export function QuickAddModal({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. API test design techniques"
               autoFocus
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="qa-description">Description</Label>
+            <Textarea
+              id="qa-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description..."
+              rows={2}
             />
           </div>
 

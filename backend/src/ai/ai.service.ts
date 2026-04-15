@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -9,7 +9,7 @@ import { buildTaskPrompt } from './prompts/task.prompt.js';
 import { buildBugAnalysisPrompt } from './prompts/bug-analysis.prompt.js';
 import { buildTeachBackPrompt } from './prompts/teach-back.prompt.js';
 
-const MODEL = 'claude-sonnet-4-5-20251022';
+const MODEL = 'claude-sonnet-4-5-20250514';
 
 export type AssessmentMode =
   | 'quiz'
@@ -71,8 +71,14 @@ export class AiService {
       rawText = firstContent.text;
     } catch (error) {
       if (error instanceof InternalServerErrorException) throw error;
+      const msg = (error as Error).message ?? '';
+      if (msg.includes('credit balance') || msg.includes('billing')) {
+        throw new BadRequestException(
+          'AI service unavailable: Anthropic API credits are exhausted. Please add credits to your Anthropic account.',
+        );
+      }
       throw new InternalServerErrorException(
-        `AI generation failed: ${(error as Error).message}`,
+        `AI generation failed: ${msg}`,
       );
     }
 
@@ -99,8 +105,14 @@ export class AiService {
       rawText = firstContent.text;
     } catch (error) {
       if (error instanceof InternalServerErrorException) throw error;
+      const msg = (error as Error).message ?? '';
+      if (msg.includes('credit balance') || msg.includes('billing')) {
+        throw new BadRequestException(
+          'AI service unavailable: Anthropic API credits are exhausted. Please add credits to your Anthropic account.',
+        );
+      }
       throw new InternalServerErrorException(
-        `AI evaluation failed: ${(error as Error).message}`,
+        `AI evaluation failed: ${msg}`,
       );
     }
 

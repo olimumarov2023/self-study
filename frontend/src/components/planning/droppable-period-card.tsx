@@ -1,25 +1,26 @@
 import { useDroppable } from '@dnd-kit/core';
-import { Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 
 import { PlanItemRow } from '@/components/planning/plan-item-row';
+import { cn } from '@/lib/utils';
 
 import type { PlanAssignment } from '@/types/planning.types';
 import type { LearningItem } from '@/types/learning-item.types';
 
 interface DroppablePeriodCardProps {
-  /** Unique droppable ID (e.g. the period key) */
   id: string;
-  /** Display title (e.g. "March 2026", "Week 2 — Mar 3–9") */
   title: string;
-  /** Optional subtitle */
   subtitle?: string;
-  /** Assigned items for this period */
+  badge?: string;
+  /** Numbered circle shown before the title */
+  numberBadge?: number;
+  /** Temporal status — dims past, highlights current */
+  timeStatus?: 'past' | 'current' | 'future';
   assignments: PlanAssignment[];
   isLoading?: boolean;
   isError?: boolean;
-  /** Show status indicator on items */
   showStatus?: boolean;
-  /** Called when an item row is clicked */
+  highlight?: boolean;
   onItemClick?: (item: LearningItem) => void;
 }
 
@@ -27,32 +28,76 @@ export function DroppablePeriodCard({
   id,
   title,
   subtitle,
+  badge,
+  numberBadge,
+  timeStatus,
   assignments,
   isLoading,
   isError,
   showStatus,
+  highlight,
   onItemClick,
 }: DroppablePeriodCardProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
+  const isPast = timeStatus === 'past';
+
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-lg border-2 transition-colors ${
+      className={cn(
+        'rounded-lg border-2 transition-colors',
+        isPast && 'opacity-60',
         isOver
           ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-          : 'border-border bg-card'
-      }`}
+          : highlight
+            ? 'border-primary/40 bg-primary/[0.03]'
+            : 'border-border bg-card',
+      )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-2.5">
-        <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+      <div className={cn(
+        'flex items-center justify-between border-b px-4 py-2.5',
+        highlight && !isOver && 'bg-primary/5',
+      )}>
+        <div className="flex items-center gap-2.5">
+          {numberBadge != null && (
+            <span className={cn(
+              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
+              highlight
+                ? 'bg-primary'
+                : isPast
+                  ? 'bg-muted text-muted-foreground'
+                  : [
+                      'bg-blue-500',
+                      'bg-violet-500',
+                      'bg-amber-500',
+                      'bg-emerald-500',
+                      'bg-rose-500',
+                      'bg-cyan-500',
+                    ][(numberBadge - 1) % 6],
+            )}>
+              {isPast ? <CheckCircle2 className="h-3.5 w-3.5" /> : numberBadge}
+            </span>
+          )}
+          <div>
+            <h3 className="text-sm font-semibold">{title}</h3>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          {badge && (
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              {badge}
+            </span>
           )}
         </div>
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+        <span className={cn(
+          'rounded-full px-2 py-0.5 text-xs font-medium',
+          assignments.length > 0
+            ? 'bg-primary/10 text-primary'
+            : 'bg-muted text-muted-foreground',
+        )}>
           {assignments.length}
         </span>
       </div>

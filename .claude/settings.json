@@ -5,7 +5,10 @@
       "Bash(psql -U postgres -c \"CREATE DATABASE self_study;\")",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -c \"CREATE DATABASE self_study;\")",
       "Bash(xargs grep *)",
-      "Read(//c/Users/VICTUS~1/AppData/Local/Temp/claude/c--Personal-self-study/f9f61d0a-dd40-4ff6-9044-e7fe4554aa3c/tasks/**)"
+      "Read(//c/Users/VICTUS~1/AppData/Local/Temp/claude/c--Personal-self-study/f9f61d0a-dd40-4ff6-9044-e7fe4554aa3c/tasks/**)",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"password\":\"admin123\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/assessments/generate -H \"Content-Type: application/json\" -H \"Authorization: Bearer $\\(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"password\":\"admin123\"}')",
+      "Bash(node -e ' *)"
     ]
   }
 }

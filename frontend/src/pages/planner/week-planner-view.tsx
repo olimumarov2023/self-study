@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DroppablePeriodCard } from '@/components/planning/droppable-period-card';
-import { AutoDistributeButton } from '@/components/planning/auto-distribute-button';
 import { useWeekPlan } from '@/queries/use-planning';
 
 import type { LearningItem } from '@/types/learning-item.types';
@@ -37,6 +36,11 @@ function getMondayOfISOWeek(year: number, week: number): Date {
 
 function toWeekKey(year: number, week: number): string {
   return `${year}-W${String(week).padStart(2, '0')}`;
+}
+
+function getCurrentWeekKey(): string {
+  const now = new Date();
+  return toWeekKey(getISOWeekYear(now), getISOWeekNumber(now));
 }
 
 function getCurrentMonthKey(): string {
@@ -113,9 +117,10 @@ function getWeeksOfMonth(yyyyMM: string): WeekInfo[] {
 interface WeekPlannerViewProps {
   onMonthChange?: (monthKey: string) => void;
   onItemClick?: (item: LearningItem) => void;
+  onAddItem?: (weekKey: string) => void;
 }
 
-export function WeekPlannerView({ onMonthChange, onItemClick }: WeekPlannerViewProps) {
+export function WeekPlannerView({ onMonthChange, onItemClick, onAddItem }: WeekPlannerViewProps) {
   const [monthKey, setMonthKey] = useState(() => {
     const key = getCurrentMonthKey();
     onMonthChange?.(key);
@@ -123,12 +128,20 @@ export function WeekPlannerView({ onMonthChange, onItemClick }: WeekPlannerViewP
   });
 
   const weeks = useMemo(() => getWeeksOfMonth(monthKey), [monthKey]);
+  const currentWeekKey = useMemo(() => getCurrentWeekKey(), []);
 
-  // Fetch data for all weeks in this month
-  const weekQueries = weeks.map((w) => ({
+  // Always call hooks for 6 slots (max weeks in any month) to satisfy rules of hooks
+  const q0 = useWeekPlan(weeks[0]?.weekKey ?? '');
+  const q1 = useWeekPlan(weeks[1]?.weekKey ?? '');
+  const q2 = useWeekPlan(weeks[2]?.weekKey ?? '');
+  const q3 = useWeekPlan(weeks[3]?.weekKey ?? '');
+  const q4 = useWeekPlan(weeks[4]?.weekKey ?? '');
+  const q5 = useWeekPlan(weeks[5]?.weekKey ?? '');
+  const allQueries = [q0, q1, q2, q3, q4, q5];
+
+  const weekQueries = weeks.map((w, i) => ({
     weekInfo: w,
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    query: useWeekPlan(w.weekKey),
+    query: allQueries[i]!,
   }));
 
   function changeMonth(delta: number) {
@@ -156,22 +169,42 @@ export function WeekPlannerView({ onMonthChange, onItemClick }: WeekPlannerViewP
 
       {/* Week cards */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {weekQueries.map(({ weekInfo, query }) => (
+        {weekQueries.map(({ weekInfo, query }) => {
+          const isCurrent = weekInfo.weekKey === currentWeekKey;
+          const timeStatus = weekInfo.weekKey < currentWeekKey
+            ? 'past' as const
+            : isCurrent
+              ? 'current' as const
+              : 'future' as const;
+          return (
           <div key={weekInfo.weekKey} className="space-y-1">
             <DroppablePeriodCard
               id={`week:${weekInfo.weekKey}`}
               title={weekInfo.label}
               subtitle={weekInfo.dateRange}
+              numberBadge={weekInfo.weekOfMonth}
+              badge={isCurrent ? 'Current' : undefined}
+              highlight={isCurrent}
+              timeStatus={timeStatus}
               assignments={query.data ?? []}
               isLoading={query.isLoading}
               isError={query.isError}
               onItemClick={onItemClick}
             />
             <div className="flex justify-end">
-              <AutoDistributeButton weekPeriodKey={weekInfo.weekKey} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onAddItem?.(weekInfo.weekKey)}
+              >
+                <Plus className="mr-1 h-3 w-3" />
+                Add Item
+              </Button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -7,6 +7,9 @@ export const boardApi = {
   getToday: () =>
     apiClient.get<BoardResponse>('/board/today').then((r) => r.data),
 
+  getByDate: (date: string) =>
+    apiClient.get<BoardResponse>(`/board/date/${date}`).then((r) => r.data),
+
   getWeek: () =>
     apiClient.get<BoardResponse>('/board/week').then((r) => r.data),
 

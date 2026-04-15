@@ -1,9 +1,8 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Clock, BarChart3, CheckCircle2 } from 'lucide-react';
+import { GripVertical, CheckCircle2 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
-import { Priority, LearnStatus } from '@/types/enums';
+import { LearnStatus } from '@/types/enums';
 
 import type { PlanAssignment } from '@/types/planning.types';
 import type { LearningItem } from '@/types/learning-item.types';
@@ -13,18 +12,6 @@ interface PlanItemRowProps {
   showStatus?: boolean;
   onItemClick?: (item: LearningItem) => void;
 }
-
-const PRIORITY_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  [Priority.HIGH]: 'destructive',
-  [Priority.MEDIUM]: 'default',
-  [Priority.LOW]: 'secondary',
-};
-
-const PRIORITY_LABEL: Record<string, string> = {
-  [Priority.HIGH]: 'High',
-  [Priority.MEDIUM]: 'Medium',
-  [Priority.LOW]: 'Low',
-};
 
 export function PlanItemRow({ assignment, showStatus = false, onItemClick }: PlanItemRowProps) {
   const item = assignment.learningItem;
@@ -37,7 +24,6 @@ export function PlanItemRow({ assignment, showStatus = false, onItemClick }: Pla
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
@@ -45,7 +31,7 @@ export function PlanItemRow({ assignment, showStatus = false, onItemClick }: Pla
       ref={setNodeRef}
       style={style}
       className={`flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50 cursor-pointer ${
-        isDragging ? 'z-50 shadow-lg ring-2 ring-primary/50' : ''
+        isDragging ? 'opacity-0' : ''
       }`}
       onClick={() => onItemClick?.(item)}
     >
@@ -68,33 +54,15 @@ export function PlanItemRow({ assignment, showStatus = false, onItemClick }: Pla
           </span>
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          {item.category && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ backgroundColor: item.category.color ?? '#6b7280' }}
-              />
-              {item.category.name}
-            </span>
-          )}
-
-          <Badge variant={PRIORITY_VARIANT[item.priority] ?? 'secondary'} className="text-xs">
-            {PRIORITY_LABEL[item.priority] ?? item.priority}
-          </Badge>
-
-          {item.estimatedHours != null && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {item.estimatedHours}h
-            </span>
-          )}
-
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <BarChart3 className="h-3 w-3" />
-            {item.difficulty}/5
-          </span>
-        </div>
+        {item.category && (
+          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ backgroundColor: item.category.color ?? '#6b7280' }}
+            />
+            {item.category.name}
+          </div>
+        )}
       </div>
     </div>
   );

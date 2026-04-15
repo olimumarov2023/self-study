@@ -38,6 +38,19 @@ export class BoardService {
     };
   }
 
+  async getByDate(userId: string, date: string) {
+    const assignments = await this.prisma.planAssignment.findMany({
+      where: { userId, level: 'DAILY', periodKey: date },
+      include: itemInclude,
+      orderBy: { rank: 'asc' },
+    });
+
+    return {
+      columns: groupByStatus(assignments),
+      date,
+    };
+  }
+
   async getWeek(userId: string) {
     const weekDates = getCurrentWeekDates();
 
@@ -98,28 +111,28 @@ export class BoardService {
   }
 }
 
-/** Format a Date as YYYY-MM-DD in UTC. */
+/** Format a Date as YYYY-MM-DD in local time. */
 function toDateString(date: Date): string {
-  const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 }
 
-/** Get Mon-Fri date strings for the current ISO week. */
+/** Get Mon-Sun date strings for the current ISO week. */
 function getCurrentWeekDates(): string[] {
   const now = new Date();
-  const utcDay = now.getUTCDay(); // 0=Sun, 1=Mon, ...
-  const daysSinceMonday = utcDay === 0 ? 6 : utcDay - 1;
+  const day = now.getDay(); // 0=Sun, 1=Mon, ...
+  const daysSinceMonday = day === 0 ? 6 : day - 1;
 
   const monday = new Date(now);
-  monday.setUTCDate(now.getUTCDate() - daysSinceMonday);
+  monday.setDate(now.getDate() - daysSinceMonday);
 
   const dates: string[] = [];
-  for (let i = 0; i < 5; i++) {
-    const day = new Date(monday);
-    day.setUTCDate(monday.getUTCDate() + i);
-    dates.push(toDateString(day));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push(toDateString(d));
   }
   return dates;
 }

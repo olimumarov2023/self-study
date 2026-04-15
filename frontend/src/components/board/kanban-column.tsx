@@ -13,9 +13,10 @@ import type { BoardItem } from '@/types/board.types';
 interface KanbanColumnProps {
   status: LearnStatus;
   items: BoardItem[];
+  onItemClick?: (item: BoardItem) => void;
 }
 
-export function KanbanColumn({ status, items }: KanbanColumnProps) {
+export function KanbanColumn({ status, items, onItemClick }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   const itemIds = items.map((item) => item.id);
@@ -41,7 +42,7 @@ export function KanbanColumn({ status, items }: KanbanColumnProps) {
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           {items.map((item) => (
-            <LearningCard key={item.id} item={item} />
+            <LearningCard key={item.id} item={item} onClick={onItemClick} />
           ))}
         </SortableContext>
 

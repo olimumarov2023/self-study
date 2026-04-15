@@ -22,9 +22,10 @@ interface KanbanBoardProps {
   data: BoardResponse;
   search: string;
   categoryId: string;
+  onItemClick?: (item: BoardItem) => void;
 }
 
-export function KanbanBoard({ data, search, categoryId }: KanbanBoardProps) {
+export function KanbanBoard({ data, search, categoryId, onItemClick }: KanbanBoardProps) {
   const [activeItem, setActiveItem] = useState<BoardItem | null>(null);
   const dragMutation = useDragItem();
 
@@ -157,6 +158,7 @@ export function KanbanBoard({ data, search, categoryId }: KanbanBoardProps) {
             key={status}
             status={status}
             items={columns[status] ?? []}
+            onItemClick={onItemClick}
           />
         ))}
       </div>

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Patch,
+  Param,
   Body,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,14 @@ export class BoardController {
   @Get('today')
   async getToday(@CurrentUser() userId: string) {
     return this.boardService.getToday(userId);
+  }
+
+  @Get('date/:yyyyMMdd')
+  async getByDate(
+    @CurrentUser() userId: string,
+    @Param('yyyyMMdd') date: string,
+  ) {
+    return this.boardService.getByDate(userId, date);
   }
 
   @Get('week')

@@ -53,6 +53,7 @@ export function useUpdateLearningItem() {
       queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
       queryClient.invalidateQueries({ queryKey: learningItemKeys.details() });
       queryClient.invalidateQueries({ queryKey: ['planning'] });
+      queryClient.invalidateQueries({ queryKey: ['board'] });
     },
   });
 }
@@ -64,6 +65,7 @@ export function useDeleteLearningItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
       queryClient.invalidateQueries({ queryKey: ['planning'] });
+      queryClient.invalidateQueries({ queryKey: ['board'] });
     },
   });
 }

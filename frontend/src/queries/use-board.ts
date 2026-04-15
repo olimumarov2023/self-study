@@ -9,12 +9,21 @@ export const boardKeys = {
   all: ['board'] as const,
   today: () => [...boardKeys.all, 'today'] as const,
   week: () => [...boardKeys.all, 'week'] as const,
+  date: (d: string) => [...boardKeys.all, 'date', d] as const,
 };
 
 export function useTodayBoard() {
   return useQuery({
     queryKey: boardKeys.today(),
     queryFn: boardApi.getToday,
+  });
+}
+
+export function useDateBoard(date: string) {
+  return useQuery({
+    queryKey: boardKeys.date(date),
+    queryFn: () => boardApi.getByDate(date),
+    enabled: !!date,
   });
 }
 
