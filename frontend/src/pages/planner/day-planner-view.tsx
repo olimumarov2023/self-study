@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { PlanItemRow } from '@/components/planning/plan-item-row';
-import { AssignItemsDialog } from '@/components/planning/assign-items-dialog';
-import { useDayPlan, useWeekPlan } from '@/queries/use-planning';
-import { LearnStatus } from '@/types/enums';
+import { DroppablePeriodCard } from '@/components/planning/droppable-period-card';
+import { useDayPlan } from '@/queries/use-planning';
+
+import type { LearningItem } from '@/types/learning-item.types';
 
 function getCurrentDayKey(): string {
   const now = new Date();
@@ -58,100 +58,59 @@ function getWeekKeyForDay(yyyyMMdd: string): string {
   return `${weekYear}-W${String(weekNum).padStart(2, '0')}`;
 }
 
-export function DayPlannerView() {
-  const [dayKey, setDayKey] = useState(getCurrentDayKey);
-  const [assignOpen, setAssignOpen] = useState(false);
+interface DayPlannerViewProps {
+  onWeekChange?: (weekKey: string) => void;
+  onDayChange?: (dayKey: string) => void;
+  onItemClick?: (item: LearningItem) => void;
+}
+
+export function DayPlannerView({ onWeekChange, onDayChange, onItemClick }: DayPlannerViewProps) {
+  const [dayKey, setDayKey] = useState(() => {
+    const key = getCurrentDayKey();
+    onWeekChange?.(getWeekKeyForDay(key));
+    onDayChange?.(key);
+    return key;
+  });
 
   const { data: assignments, isLoading, isError } = useDayPlan(dayKey);
 
-  // Fetch weekly items to use as parent assignments for the assign dialog
-  const weekKey = getWeekKeyForDay(dayKey);
-  const { data: weekAssignments } = useWeekPlan(weekKey);
-
-  const completedCount = assignments?.filter(
-    (a) => a.learningItem.status === LearnStatus.LEARNED,
-  ).length ?? 0;
-  const totalCount = assignments?.length ?? 0;
+  function changeDay(delta: number) {
+    setDayKey((prev) => {
+      const next = shiftDay(prev, delta);
+      const nextWeekKey = getWeekKeyForDay(next);
+      const prevWeekKey = getWeekKeyForDay(prev);
+      if (nextWeekKey !== prevWeekKey) {
+        onWeekChange?.(nextWeekKey);
+      }
+      onDayChange?.(next);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-4">
       {/* Period selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setDayKey((prev) => shiftDay(prev, -1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="min-w-[240px] text-center text-lg font-semibold">
-            {formatDayDisplay(dayKey)}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setDayKey((prev) => shiftDay(prev, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Button onClick={() => setAssignOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Assign Items
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" onClick={() => changeDay(-1)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="min-w-[240px] text-center text-lg font-semibold">
+          {formatDayDisplay(dayKey)}
+        </span>
+        <Button variant="outline" size="icon" onClick={() => changeDay(1)}>
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Completion summary */}
-      {totalCount > 0 && (
-        <div className="rounded-lg bg-muted/50 p-3 text-sm">
-          <span className="font-medium">
-            {completedCount}/{totalCount}
-          </span>{' '}
-          items completed
-          {totalCount > 0 && (
-            <span className="ml-2 text-muted-foreground">
-              ({Math.round((completedCount / totalCount) * 100)}%)
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Items list */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {isError && (
-        <p className="py-8 text-center text-sm text-destructive">
-          Failed to load day plan.
-        </p>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          No items assigned for this day. Assign items from the weekly plan.
-        </div>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length > 0 && (
-        <div className="space-y-2">
-          {assignments.map((assignment) => (
-            <PlanItemRow key={assignment.id} assignment={assignment} showStatus />
-          ))}
-        </div>
-      )}
-
-      <AssignItemsDialog
-        open={assignOpen}
-        onOpenChange={setAssignOpen}
-        level="DAILY"
-        periodKey={dayKey}
-        existingAssignments={assignments ?? []}
-        parentAssignments={weekAssignments}
+      {/* Droppable day card */}
+      <DroppablePeriodCard
+        id={`day:${dayKey}`}
+        title={formatDayDisplay(dayKey)}
+        assignments={assignments ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        showStatus
+        onItemClick={onItemClick}
       />
     </div>
   );

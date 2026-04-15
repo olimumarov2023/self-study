@@ -12,7 +12,7 @@ export function useLogin() {
     mutationFn: (password: string) => authApi.login(password),
     onSuccess: (data) => {
       setToken(data.accessToken);
-      navigate('/dashboard', { replace: true });
+      navigate('/workspace', { replace: true });
     },
   });
 }

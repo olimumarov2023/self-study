@@ -1,11 +1,14 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { PlanItemRow } from '@/components/planning/plan-item-row';
-import { AssignItemsDialog } from '@/components/planning/assign-items-dialog';
+import { DroppablePeriodCard } from '@/components/planning/droppable-period-card';
 import { AutoDistributeButton } from '@/components/planning/auto-distribute-button';
-import { useWeekPlan, useMonthPlan } from '@/queries/use-planning';
+import { useWeekPlan } from '@/queries/use-planning';
+
+import type { LearningItem } from '@/types/learning-item.types';
+
+/* ── ISO week helpers ────────────────────────────────── */
 
 function getISOWeekNumber(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -22,132 +25,154 @@ function getISOWeekYear(date: Date): number {
   return d.getUTCFullYear();
 }
 
-function getCurrentWeekKey(): string {
-  const now = new Date();
-  const year = getISOWeekYear(now);
-  const week = getISOWeekNumber(now);
+function getMondayOfISOWeek(year: number, week: number): Date {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const mondayOfWeek1 = new Date(jan4);
+  mondayOfWeek1.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
+  const target = new Date(mondayOfWeek1);
+  target.setUTCDate(mondayOfWeek1.getUTCDate() + (week - 1) * 7);
+  return target;
+}
+
+function toWeekKey(year: number, week: number): string {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
-function parseWeekKey(weekKey: string): { year: number; week: number } {
-  const match = weekKey.match(/^(\d{4})-W(\d{2})$/);
-  if (!match) return { year: 2026, week: 1 };
-  return { year: Number(match[1]), week: Number(match[2]) };
+function getCurrentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function shiftWeek(weekKey: string, delta: number): string {
-  const { year, week } = parseWeekKey(weekKey);
-
-  // Get Monday of current week, then shift by delta weeks
-  const jan4 = new Date(Date.UTC(year, 0, 4));
-  const jan4Day = jan4.getUTCDay() || 7;
-  const mondayOfWeek1 = new Date(jan4);
-  mondayOfWeek1.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
-
-  const targetMonday = new Date(mondayOfWeek1);
-  targetMonday.setUTCDate(mondayOfWeek1.getUTCDate() + (week - 1 + delta) * 7);
-
-  const newYear = getISOWeekYear(targetMonday);
-  const newWeek = getISOWeekNumber(targetMonday);
-  return `${newYear}-W${String(newWeek).padStart(2, '0')}`;
+function formatMonthDisplay(yyyyMM: string): string {
+  const [year, month] = yyyyMM.split('-');
+  const date = new Date(Number(year), Number(month) - 1);
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-function getMonthKeyForWeek(weekKey: string): string {
-  const { year, week } = parseWeekKey(weekKey);
-  const jan4 = new Date(Date.UTC(year, 0, 4));
-  const jan4Day = jan4.getUTCDay() || 7;
-  const mondayOfWeek1 = new Date(jan4);
-  mondayOfWeek1.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
-
-  const targetMonday = new Date(mondayOfWeek1);
-  targetMonday.setUTCDate(mondayOfWeek1.getUTCDate() + (week - 1) * 7);
-
-  const yyyy = targetMonday.getUTCFullYear();
-  const mm = String(targetMonday.getUTCMonth() + 1).padStart(2, '0');
+function shiftMonth(yyyyMM: string, delta: number): string {
+  const [year, month] = yyyyMM.split('-');
+  const date = new Date(Number(year), Number(month) - 1 + delta);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
   return `${yyyy}-${mm}`;
 }
 
-export function WeekPlannerView() {
-  const [weekKey, setWeekKey] = useState(getCurrentWeekKey);
-  const [assignOpen, setAssignOpen] = useState(false);
+/* ── Get all ISO weeks that overlap a given month ────── */
 
-  const { data: assignments, isLoading, isError } = useWeekPlan(weekKey);
+interface WeekInfo {
+  weekKey: string;
+  weekOfMonth: number;
+  monday: Date;
+  sunday: Date;
+  label: string;
+  dateRange: string;
+}
 
-  // Fetch monthly items to use as parent assignments for the assign dialog
-  const monthKey = getMonthKeyForWeek(weekKey);
-  const { data: monthAssignments } = useMonthPlan(monthKey);
+function getWeeksOfMonth(yyyyMM: string): WeekInfo[] {
+  const [yearStr, monthStr] = yyyyMM.split('-');
+  const year = Number(yearStr);
+  const month = Number(monthStr) - 1; // 0-indexed
+
+  const firstDay = new Date(Date.UTC(year, month, 1));
+  const lastDay = new Date(Date.UTC(year, month + 1, 0));
+
+  const weeks: WeekInfo[] = [];
+  const seen = new Set<string>();
+
+  // Iterate each day of the month, collect unique weeks
+  for (let d = new Date(firstDay); d <= lastDay; d.setUTCDate(d.getUTCDate() + 1)) {
+    const wy = getISOWeekYear(d);
+    const wn = getISOWeekNumber(d);
+    const key = toWeekKey(wy, wn);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const monday = getMondayOfISOWeek(wy, wn);
+    const sunday = new Date(monday);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
+
+    const fmtDay = (dt: Date) =>
+      dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+    weeks.push({
+      weekKey: key,
+      weekOfMonth: weeks.length + 1,
+      monday,
+      sunday,
+      label: `Week ${weeks.length + 1}`,
+      dateRange: `${fmtDay(monday)} – ${fmtDay(sunday)}`,
+    });
+  }
+
+  return weeks;
+}
+
+/* ── Component ───────────────────────────────────────── */
+
+interface WeekPlannerViewProps {
+  onMonthChange?: (monthKey: string) => void;
+  onItemClick?: (item: LearningItem) => void;
+}
+
+export function WeekPlannerView({ onMonthChange, onItemClick }: WeekPlannerViewProps) {
+  const [monthKey, setMonthKey] = useState(() => {
+    const key = getCurrentMonthKey();
+    onMonthChange?.(key);
+    return key;
+  });
+
+  const weeks = useMemo(() => getWeeksOfMonth(monthKey), [monthKey]);
+
+  // Fetch data for all weeks in this month
+  const weekQueries = weeks.map((w) => ({
+    weekInfo: w,
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    query: useWeekPlan(w.weekKey),
+  }));
+
+  function changeMonth(delta: number) {
+    setMonthKey((prev) => {
+      const next = shiftMonth(prev, delta);
+      onMonthChange?.(next);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-4">
-      {/* Period selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setWeekKey((prev) => shiftWeek(prev, -1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="min-w-[120px] text-center text-lg font-semibold">
-            {weekKey}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setWeekKey((prev) => shiftWeek(prev, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <AutoDistributeButton weekPeriodKey={weekKey} />
-          <Button onClick={() => setAssignOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Assign Items
-          </Button>
-        </div>
+      {/* Month selector */}
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="min-w-[160px] text-center text-lg font-semibold">
+          {formatMonthDisplay(monthKey)}
+        </span>
+        <Button variant="outline" size="icon" onClick={() => changeMonth(1)}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Items list */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {isError && (
-        <p className="py-8 text-center text-sm text-destructive">
-          Failed to load week plan.
-        </p>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          No items assigned to this week yet. Assign items from the monthly plan or auto-distribute.
-        </div>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            {assignments.length} item{assignments.length !== 1 ? 's' : ''} planned
-          </p>
-          {assignments.map((assignment) => (
-            <PlanItemRow key={assignment.id} assignment={assignment} />
-          ))}
-        </div>
-      )}
-
-      <AssignItemsDialog
-        open={assignOpen}
-        onOpenChange={setAssignOpen}
-        level="WEEKLY"
-        periodKey={weekKey}
-        existingAssignments={assignments ?? []}
-        parentAssignments={monthAssignments}
-      />
+      {/* Week cards */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {weekQueries.map(({ weekInfo, query }) => (
+          <div key={weekInfo.weekKey} className="space-y-1">
+            <DroppablePeriodCard
+              id={`week:${weekInfo.weekKey}`}
+              title={weekInfo.label}
+              subtitle={weekInfo.dateRange}
+              assignments={query.data ?? []}
+              isLoading={query.isLoading}
+              isError={query.isError}
+              onItemClick={onItemClick}
+            />
+            <div className="flex justify-end">
+              <AutoDistributeButton weekPeriodKey={weekInfo.weekKey} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

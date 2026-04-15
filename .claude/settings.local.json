@@ -40,7 +40,11 @@
       "Bash(tasklist /FI \"PID eq 5992\")",
       "Bash(taskkill //PID 5992 //F)",
       "Bash(find /c/Personal/self-study/frontend/src/pages -type f -name *.tsx)",
-      "Bash(npx ts-node:*)"
+      "Bash(npx ts-node:*)",
+      "Read(//c/DanAds/Projects/Yahoo/yahoo-doc/phases//**)",
+      "Read(//c/DanAds/Projects/Yahoo/yahoo-doc/phases/**)",
+      "Bash(npx vite:*)",
+      "Bash(find /c/Personal/self-study/backend/src -type f -name *.ts)"
     ],
     "additionalDirectories": [
       "c:\\Personal\\self-study\\.claude",

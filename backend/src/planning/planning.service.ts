@@ -25,6 +25,7 @@ export class PlanningService {
       throw new NotFoundException('Learning item not found');
     }
 
+    // Check if already assigned to this exact period
     const existing = await this.prisma.planAssignment.findFirst({
       where: {
         userId,
@@ -36,6 +37,33 @@ export class PlanningService {
 
     if (existing) {
       throw new ConflictException('Item is already assigned to this period');
+    }
+
+    // Remove any existing assignment at the same level (move between periods)
+    await this.prisma.planAssignment.deleteMany({
+      where: {
+        userId,
+        learningItemId: dto.learningItemId,
+        level: dto.level,
+      },
+    });
+
+    // When moving down a level, remove the parent assignment
+    const parentLevel =
+      dto.level === 'WEEKLY'
+        ? 'MONTHLY'
+        : dto.level === 'DAILY'
+          ? 'WEEKLY'
+          : null;
+
+    if (parentLevel) {
+      await this.prisma.planAssignment.deleteMany({
+        where: {
+          userId,
+          learningItemId: dto.learningItemId,
+          level: parentLevel,
+        },
+      });
     }
 
     const maxRank = await this.prisma.planAssignment.aggregate({

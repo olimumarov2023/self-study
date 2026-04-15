@@ -1,33 +1,23 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Inbox,
   CalendarRange,
   Kanban,
   BarChart3,
   Settings,
   BookOpen,
   ClipboardList,
-  Map,
-  Bell,
-  Library,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { TimerWidget } from '@/components/timer/timer-widget';
 import { useActiveSession } from '@/queries/use-time-tracking';
-import { ReminderBell } from '@/components/layout/reminder-bell';
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/backlog', label: 'Backlog', icon: Inbox },
-  { to: '/planner', label: 'Planner', icon: CalendarRange },
+  { to: '/workspace', label: 'Workspace', icon: CalendarRange },
   { to: '/board', label: 'Board', icon: Kanban },
   { to: '/stats', label: 'Stats', icon: BarChart3 },
   { to: '/assessments', label: 'Assessments', icon: ClipboardList },
-  { to: '/library', label: 'Library', icon: Library },
-  { to: '/reminders', label: 'Reminders', icon: Bell },
-  { to: '/roadmap', label: 'Roadmap', icon: Map },
+
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -73,7 +63,6 @@ export function MainLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header bar */}
         <header className="flex h-14 items-center justify-end gap-2 border-b px-6">
-          <ReminderBell />
           <TimerWidget />
         </header>
         <main className="flex-1 overflow-y-auto p-6">

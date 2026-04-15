@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { PlanItemRow } from '@/components/planning/plan-item-row';
-import { AssignItemsDialog } from '@/components/planning/assign-items-dialog';
+import { DroppablePeriodCard } from '@/components/planning/droppable-period-card';
 import { useMonthPlan } from '@/queries/use-planning';
+
+import type { LearningItem } from '@/types/learning-item.types';
 
 function getCurrentMonthKey(): string {
   const now = new Date();
@@ -27,78 +28,51 @@ function shiftMonth(yyyyMM: string, delta: number): string {
   return `${yyyy}-${mm}`;
 }
 
-export function MonthPlannerView() {
-  const [monthKey, setMonthKey] = useState(getCurrentMonthKey);
-  const [assignOpen, setAssignOpen] = useState(false);
+interface MonthPlannerViewProps {
+  onMonthChange?: (monthKey: string) => void;
+  onItemClick?: (item: LearningItem) => void;
+}
+
+export function MonthPlannerView({ onMonthChange, onItemClick }: MonthPlannerViewProps) {
+  const [monthKey, setMonthKey] = useState(() => {
+    const key = getCurrentMonthKey();
+    onMonthChange?.(key);
+    return key;
+  });
 
   const { data: assignments, isLoading, isError } = useMonthPlan(monthKey);
+
+  function changeMonth(delta: number) {
+    setMonthKey((prev) => {
+      const next = shiftMonth(prev, delta);
+      onMonthChange?.(next);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-4">
       {/* Period selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setMonthKey((prev) => shiftMonth(prev, -1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="min-w-[160px] text-center text-lg font-semibold">
-            {formatMonthDisplay(monthKey)}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setMonthKey((prev) => shiftMonth(prev, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Button onClick={() => setAssignOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Assign Items
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="min-w-[160px] text-center text-lg font-semibold">
+          {formatMonthDisplay(monthKey)}
+        </span>
+        <Button variant="outline" size="icon" onClick={() => changeMonth(1)}>
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Items list */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {isError && (
-        <p className="py-8 text-center text-sm text-destructive">
-          Failed to load month plan.
-        </p>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          No items assigned to this month yet. Click "Assign Items" to add some.
-        </div>
-      )}
-
-      {!isLoading && !isError && assignments && assignments.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            {assignments.length} item{assignments.length !== 1 ? 's' : ''} planned
-          </p>
-          {assignments.map((assignment) => (
-            <PlanItemRow key={assignment.id} assignment={assignment} />
-          ))}
-        </div>
-      )}
-
-      <AssignItemsDialog
-        open={assignOpen}
-        onOpenChange={setAssignOpen}
-        level="MONTHLY"
-        periodKey={monthKey}
-        existingAssignments={assignments ?? []}
+      {/* Droppable month card */}
+      <DroppablePeriodCard
+        id={`month:${monthKey}`}
+        title={formatMonthDisplay(monthKey)}
+        assignments={assignments ?? []}
+        isLoading={isLoading}
+        isError={isError}
+        onItemClick={onItemClick}
       />
     </div>
   );

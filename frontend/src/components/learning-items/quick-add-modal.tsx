@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCategories } from '@/queries/use-categories';
-import { Priority } from '@/types/enums';
 
 import type { FormEvent } from 'react';
 import type { CreateLearningItemPayload } from '@/types/learning-item.types';
@@ -42,20 +41,14 @@ export function QuickAddModal({
 
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
-  const [priority, setPriority] = useState<string>(Priority.MEDIUM);
-  const [estimatedHours, setEstimatedHours] = useState('');
 
   function resetForm() {
     setTitle('');
     setCategoryId('');
-    setPriority(Priority.MEDIUM);
-    setEstimatedHours('');
   }
 
   function handleOpenChange(nextOpen: boolean) {
-    if (nextOpen) {
-      resetForm();
-    }
+    resetForm();
     onOpenChange(nextOpen);
   }
 
@@ -65,18 +58,14 @@ export function QuickAddModal({
 
     const payload: CreateLearningItemPayload = {
       title: title.trim(),
-      priority: priority as CreateLearningItemPayload['priority'],
     };
 
     if (categoryId) {
       payload.categoryId = categoryId;
     }
 
-    if (estimatedHours) {
-      payload.estimatedHours = Number(estimatedHours);
-    }
-
     onSubmit(payload);
+    resetForm();
   }
 
   return (
@@ -122,33 +111,6 @@ export function QuickAddModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qa-priority">Priority</Label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger id="qa-priority">
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={Priority.LOW}>Low</SelectItem>
-                <SelectItem value={Priority.MEDIUM}>Medium</SelectItem>
-                <SelectItem value={Priority.HIGH}>High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="qa-hours">Estimated Hours</Label>
-            <Input
-              id="qa-hours"
-              type="number"
-              min={0.5}
-              step={0.5}
-              value={estimatedHours}
-              onChange={(e) => setEstimatedHours(e.target.value)}
-              placeholder="e.g. 4"
-            />
           </div>
 
           <DialogFooter>

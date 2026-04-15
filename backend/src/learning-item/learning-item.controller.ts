@@ -8,7 +8,6 @@ import {
   Param,
   Query,
   UseGuards,
-  UsePipes,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -43,10 +42,9 @@ export class LearningItemController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(CreateLearningItemSchema))
   async create(
     @CurrentUser() userId: string,
-    @Body() dto: CreateLearningItemDto,
+    @Body(new ZodValidationPipe(CreateLearningItemSchema)) dto: CreateLearningItemDto,
   ) {
     return this.learningItemService.create(userId, dto);
   }

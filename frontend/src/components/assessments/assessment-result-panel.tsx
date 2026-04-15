@@ -212,8 +212,8 @@ export function AssessmentResultPanel({
 
       {/* Actions */}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Button variant="outline" onClick={() => navigate('/backlog')}>
-          Back to Backlog
+        <Button variant="outline" onClick={() => navigate('/workspace')}>
+          Back to Workspace
         </Button>
         <Button onClick={onNewAssessment}>
           <Plus className="h-4 w-4" />
