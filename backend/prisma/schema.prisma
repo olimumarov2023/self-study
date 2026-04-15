@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -72,7 +72,7 @@ enum ReminderType {
 }
 
 model User {
-  id              String            @id @default(cuid())
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
   email           String            @unique
   passwordHash    String
   name            String?
@@ -94,15 +94,15 @@ model User {
 }
 
 model Category {
-  id         String         @id @default(cuid())
-  userId     String
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String         @db.ObjectId
   name       String
   color      String?
   weightGoal Int?
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
 
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id])
   learningItems    LearningItem[]
   libraryResources LibraryResource[]
   roadmapSkills    RoadmapSkill[]
@@ -111,9 +111,9 @@ model Category {
 }
 
 model LearningItem {
-  id               String         @id @default(cuid())
-  userId           String
-  categoryId       String?
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String         @db.ObjectId
+  categoryId       String?        @db.ObjectId
   title            String
   description      String?
   notes            String?
@@ -127,8 +127,8 @@ model LearningItem {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category         Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user             User           @relation(fields: [userId], references: [id])
+  category         Category?      @relation(fields: [categoryId], references: [id])
   plans            PlanAssignment[]
   studySessions    StudySession[]
   assessments      Assessment[]
@@ -136,38 +136,38 @@ model LearningItem {
 }
 
 model PlanAssignment {
-  id             String       @id @default(cuid())
-  userId         String
-  learningItemId String
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String       @db.ObjectId
+  learningItemId String       @db.ObjectId
   level          PlanLevel
   periodKey      String
   rank           Int          @default(0)
   createdAt      DateTime     @default(now())
 
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningItem   LearningItem @relation(fields: [learningItemId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id])
+  learningItem   LearningItem @relation(fields: [learningItemId], references: [id])
 
   @@index([userId, level, periodKey])
 }
 
 model StudySession {
-  id             String       @id @default(cuid())
-  userId         String
-  learningItemId String?
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String       @db.ObjectId
+  learningItemId String?      @db.ObjectId
   startedAt      DateTime
   endedAt        DateTime?
   durationMin    Int?
   note           String?
   createdAt      DateTime     @default(now())
 
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningItem   LearningItem? @relation(fields: [learningItemId], references: [id], onDelete: SetNull)
+  user           User          @relation(fields: [userId], references: [id])
+  learningItem   LearningItem? @relation(fields: [learningItemId], references: [id])
 }
 
 model Assessment {
-  id               String           @id @default(cuid())
-  userId           String
-  learningItemId   String
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String           @db.ObjectId
+  learningItemId   String           @db.ObjectId
   mode             AssessmentMode
   difficulty       Int              @default(3)
   questionCount    Int              @default(5)
@@ -177,15 +177,15 @@ model Assessment {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningItem LearningItem   @relation(fields: [learningItemId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id])
+  learningItem LearningItem   @relation(fields: [learningItemId], references: [id])
   runs         AssessmentRun[]
 }
 
 model AssessmentRun {
-  id              String   @id @default(cuid())
-  assessmentId    String
-  userId          String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  assessmentId    String   @db.ObjectId
+  userId          String   @db.ObjectId
   answers         Json
   score           Float
   strengths       String[]
@@ -194,16 +194,16 @@ model AssessmentRun {
   evaluationRaw   Json
   completedAt     DateTime @default(now())
 
-  assessment       Assessment        @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment       Assessment        @relation(fields: [assessmentId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
   spacedRepetition SpacedRepetition?
 }
 
 model SpacedRepetition {
-  id              String    @id @default(cuid())
-  userId          String
-  learningItemId  String    @unique
-  assessmentRunId String?   @unique
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @db.ObjectId
+  learningItemId  String    @unique @db.ObjectId
+  assessmentRunId String?   @unique @db.ObjectId
   easeFactor      Float     @default(2.5)
   intervalDays    Int       @default(1)
   reviewCount     Int       @default(0)
@@ -212,14 +212,14 @@ model SpacedRepetition {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  learningItem  LearningItem   @relation(fields: [learningItemId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id])
+  learningItem  LearningItem   @relation(fields: [learningItemId], references: [id])
   assessmentRun AssessmentRun? @relation(fields: [assessmentRunId], references: [id])
 }
 
 model LibraryResource {
-  id             String         @id @default(cuid())
-  userId         String
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String         @db.ObjectId
   type           ResourceType
   title          String
   author         String?
@@ -229,20 +229,20 @@ model LibraryResource {
   totalMinutes   Int?
   watchedMinutes Int?
   status         ResourceStatus @default(NOT_STARTED)
-  categoryId     String?
+  categoryId     String?        @db.ObjectId
   notes          String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user     User      @relation(fields: [userId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
   sessions ResourceSession[]
 }
 
 model ResourceSession {
-  id           String   @id @default(cuid())
-  resourceId   String
-  userId       String
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  resourceId   String   @db.ObjectId
+  userId       String   @db.ObjectId
   startPage    Int?
   endPage      Int?
   startMinute  Int?
@@ -252,12 +252,12 @@ model ResourceSession {
   durationMin  Int      @default(0)
   createdAt    DateTime @default(now())
 
-  resource LibraryResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource LibraryResource @relation(fields: [resourceId], references: [id])
+  user     User            @relation(fields: [userId], references: [id])
 }
 
 model RoadmapArea {
-  id        String         @id @default(cuid())
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   icon      String?
   sortOrder Int            @default(0)
@@ -265,28 +265,28 @@ model RoadmapArea {
 }
 
 model RoadmapSkill {
-  id          String      @id @default(cuid())
-  areaId      String
-  categoryId  String?
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  areaId      String      @db.ObjectId
+  categoryId  String?     @db.ObjectId
   name        String
   description String?
   status      SkillStatus @default(LOCKED)
   sortOrder   Int         @default(0)
 
-  area     RoadmapArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
-  category Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  area     RoadmapArea @relation(fields: [areaId], references: [id])
+  category Category?   @relation(fields: [categoryId], references: [id])
 }
 
 model Reminder {
-  id        String       @id @default(cuid())
-  userId    String
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String       @db.ObjectId
   type      ReminderType
   title     String
   body      String
   read      Boolean      @default(false)
   createdAt DateTime     @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 }
 
 enum StudyBookStatus {
@@ -296,8 +296,8 @@ enum StudyBookStatus {
 }
 
 model StudyBook {
-  id          String          @id @default(cuid())
-  userId      String
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String          @db.ObjectId
   title       String
   author      String?
   description String?
@@ -305,27 +305,27 @@ model StudyBook {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id])
   chapters StudyChapter[]
 
   @@unique([userId, title])
 }
 
 model StudyChapter {
-  id        String   @id @default(cuid())
-  bookId    String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookId    String   @db.ObjectId
   title     String
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  book   StudyBook    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book   StudyBook    @relation(fields: [bookId], references: [id])
   topics StudyTopic[]
 }
 
 model StudyTopic {
-  id        String    @id @default(cuid())
-  chapterId String
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  chapterId String    @db.ObjectId
   title     String
   notes     String?
   learned   Boolean   @default(false)
@@ -333,5 +333,5 @@ model StudyTopic {
   sortOrder Int       @default(0)
   createdAt DateTime  @default(now())
 
-  chapter StudyChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapter StudyChapter @relation(fields: [chapterId], references: [id])
 }

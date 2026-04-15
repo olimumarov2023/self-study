@@ -4,17 +4,22 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Upsert the default single user
-  const user = await prisma.user.upsert({
+  let user = await prisma.user.findUnique({
     where: { email: 'admin@self-study.local' },
-    update: {},
-    create: {
-      email: 'admin@self-study.local',
-      passwordHash: 'not-used-app-secret-auth',
-      name: 'Admin',
-    },
   });
 
-  console.log(`Upserted user: ${user.email} (${user.id})`);
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: 'admin@self-study.local',
+        passwordHash: 'not-used-app-secret-auth',
+        name: 'Admin',
+      },
+    });
+    console.log(`Created user: ${user.email} (${user.id})`);
+  } else {
+    console.log(`User exists: ${user.email} (${user.id})`);
+  }
 
   // Default categories
   const categories = [
@@ -26,21 +31,22 @@ async function main() {
   ];
 
   for (const cat of categories) {
-    const category = await prisma.category.upsert({
-      where: {
-        userId_name: {
+    const existing = await prisma.category.findFirst({
+      where: { userId: user.id, name: cat.name },
+    });
+
+    if (!existing) {
+      const category = await prisma.category.create({
+        data: {
           userId: user.id,
           name: cat.name,
+          color: cat.color,
         },
-      },
-      update: { color: cat.color },
-      create: {
-        userId: user.id,
-        name: cat.name,
-        color: cat.color,
-      },
-    });
-    console.log(`Upserted category: ${category.name} (${category.id})`);
+      });
+      console.log(`Created category: ${category.name} (${category.id})`);
+    } else {
+      console.log(`Category exists: ${existing.name} (${existing.id})`);
+    }
   }
 
   // Roadmap areas and skills — only seed if none exist yet
