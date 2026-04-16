@@ -1,4 +1,4 @@
-import { Clock, BarChart3 } from 'lucide-react';
+import { Clock, BarChart3, ListChecks } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -79,6 +79,17 @@ export function LearningItemCard({ item, onClick }: LearningItemCardProps) {
                   {item.estimatedHours}h
                 </span>
               )}
+
+              {item.subItems && item.subItems.length > 0 && (() => {
+                const done = item.subItems.filter((s) => s.status === LearnStatus.LEARNED).length;
+                const total = item.subItems.length;
+                return (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <ListChecks className="h-3 w-3" />
+                    {done}/{total}
+                  </span>
+                );
+              })()}
             </div>
 
             {item.tags.length > 0 && (

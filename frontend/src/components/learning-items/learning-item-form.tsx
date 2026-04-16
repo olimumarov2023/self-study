@@ -20,7 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { MultiDatePicker } from '@/components/ui/multi-date-picker';
+import { SubItemsList } from '@/components/learning-items/sub-items-list';
 import { useCategories } from '@/queries/use-categories';
+import { useItemDates, useAssignDates } from '@/queries/use-planning';
 import { LearnStatus } from '@/types/enums';
 
 import type { FormEvent } from 'react';
@@ -52,6 +56,8 @@ export function LearningItemForm({
   isPending,
 }: LearningItemFormProps) {
   const { data: categories } = useCategories();
+  const { data: assignedDates } = useItemDates(item.id);
+  const assignDates = useAssignDates();
 
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? '');
@@ -158,6 +164,20 @@ export function LearningItemForm({
               </Select>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label>Scheduled Days</Label>
+            <MultiDatePicker
+              value={assignedDates ?? []}
+              onChange={(dates) => {
+                assignDates.mutate({ learningItemId: item.id, dates });
+              }}
+              disabled={assignDates.isPending}
+            />
+          </div>
+
+          <Separator />
+          <SubItemsList parentId={item.id} />
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button

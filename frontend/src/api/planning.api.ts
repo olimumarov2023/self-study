@@ -38,4 +38,14 @@ export const planningApi = {
     apiClient
       .post<AutoDistributeResponse>('/planning/auto-distribute', data)
       .then((r) => r.data),
+
+  getItemDates: (itemId: string) =>
+    apiClient
+      .get<string[]>(`/planning/item/${itemId}/dates`)
+      .then((r) => r.data),
+
+  assignDates: (learningItemId: string, dates: string[]) =>
+    apiClient
+      .post<string[]>('/planning/assign-dates', { learningItemId, dates })
+      .then((r) => r.data),
 };

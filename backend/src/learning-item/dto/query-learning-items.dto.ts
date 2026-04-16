@@ -11,7 +11,7 @@ export const QueryLearningItemsSchema = z.object({
       'ARCHIVED',
     ])
     .optional(),
-  categoryId: z.string().cuid().optional(),
+  categoryId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ID').optional(),
   search: z.string().max(255).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
   tags: z

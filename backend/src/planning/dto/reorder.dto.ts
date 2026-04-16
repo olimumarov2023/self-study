@@ -4,7 +4,7 @@ export const ReorderSchema = z.object({
   assignments: z
     .array(
       z.object({
-        id: z.string().cuid('Invalid assignment ID'),
+        id: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid assignment ID'),
         rank: z.number().int().min(0),
       }),
     )

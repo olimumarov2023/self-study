@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const AssignSchema = z.object({
-  learningItemId: z.string().cuid('Invalid learning item ID'),
+  learningItemId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid learning item ID'),
   level: z.enum(['MONTHLY', 'WEEKLY', 'DAILY']),
   periodKey: z.string().min(1, 'Period key is required'),
 }).refine(

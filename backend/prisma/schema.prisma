@@ -114,6 +114,7 @@ model LearningItem {
   id               String         @id @default(auto()) @map("_id") @db.ObjectId
   userId           String         @db.ObjectId
   categoryId       String?        @db.ObjectId
+  parentId         String?        @db.ObjectId
   title            String
   description      String?
   notes            String?
@@ -124,11 +125,14 @@ model LearningItem {
   dueDate          DateTime?
   targetRole       String?
   tags             String[]
+  sortOrder        Int            @default(0)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
   user             User           @relation(fields: [userId], references: [id])
   category         Category?      @relation(fields: [categoryId], references: [id])
+  parent           LearningItem?  @relation("SubItems", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subItems         LearningItem[] @relation("SubItems")
   plans            PlanAssignment[]
   studySessions    StudySession[]
   assessments      Assessment[]

@@ -4,7 +4,7 @@ export const UpdateLearningItemSchema = z.object({
   title: z.string().min(1).max(255).optional(),
   description: z.string().max(2000).optional(),
   notes: z.string().max(5000).optional(),
-  categoryId: z.string().cuid().nullable().optional(),
+  categoryId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ID').nullable().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
   difficulty: z.number().int().min(1).max(5).optional(),
   estimatedHours: z.number().positive().nullable().optional(),

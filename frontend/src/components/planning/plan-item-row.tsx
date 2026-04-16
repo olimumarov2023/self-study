@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, CheckCircle2 } from 'lucide-react';
+import { GripVertical, CheckCircle2, ListChecks } from 'lucide-react';
 
 import { LearnStatus } from '@/types/enums';
 
@@ -54,15 +54,23 @@ export function PlanItemRow({ assignment, showStatus = false, onItemClick }: Pla
           </span>
         </div>
 
-        {item.category && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{ backgroundColor: item.category.color ?? '#6b7280' }}
-            />
-            {item.category.name}
-          </div>
-        )}
+        <div className="mt-1 flex items-center gap-2">
+          {item.category && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span
+                className="inline-block h-2 w-2 rounded-full"
+                style={{ backgroundColor: item.category.color ?? '#6b7280' }}
+              />
+              {item.category.name}
+            </span>
+          )}
+          {item.subItems && item.subItems.length > 0 && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <ListChecks className="h-3 w-3" />
+              {item.subItems.filter((s) => s.status === 'LEARNED').length}/{item.subItems.length}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

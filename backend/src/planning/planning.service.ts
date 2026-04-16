@@ -11,6 +11,7 @@ import { getWeekDates } from '../common/utils/date.util.js';
 import type { AssignDto } from './dto/assign.dto.js';
 import type { ReorderDto } from './dto/reorder.dto.js';
 import type { AutoDistributeDto } from './dto/auto-distribute.dto.js';
+import type { AssignDatesDto } from './dto/assign-dates.dto.js';
 
 @Injectable()
 export class PlanningService {
@@ -181,6 +182,69 @@ export class PlanningService {
     );
 
     return { created: created.length, assignments: created };
+  }
+
+  async getItemDates(userId: string, learningItemId: string) {
+    const assignments = await this.prisma.planAssignment.findMany({
+      where: { userId, learningItemId, level: 'DAILY' },
+      select: { periodKey: true },
+      orderBy: { periodKey: 'asc' },
+    });
+
+    return assignments.map((a) => a.periodKey);
+  }
+
+  async assignDates(userId: string, dto: AssignDatesDto) {
+    const learningItem = await this.prisma.learningItem.findFirst({
+      where: { id: dto.learningItemId, userId },
+    });
+
+    if (!learningItem) {
+      throw new NotFoundException('Learning item not found');
+    }
+
+    const existing = await this.prisma.planAssignment.findMany({
+      where: { userId, learningItemId: dto.learningItemId, level: 'DAILY' },
+      select: { id: true, periodKey: true },
+    });
+
+    const existingMap = new Map(existing.map((a) => [a.periodKey, a.id]));
+    const desiredSet = new Set(dto.dates);
+
+    // Remove dates no longer selected
+    const toRemove = existing.filter((a) => !desiredSet.has(a.periodKey));
+    // Add new dates
+    const toAdd = dto.dates.filter((d) => !existingMap.has(d));
+
+    const ops: any[] = [];
+
+    if (toRemove.length > 0) {
+      ops.push(
+        this.prisma.planAssignment.deleteMany({
+          where: { id: { in: toRemove.map((a) => a.id) } },
+        }),
+      );
+    }
+
+    for (const date of toAdd) {
+      ops.push(
+        this.prisma.planAssignment.create({
+          data: {
+            userId,
+            learningItemId: dto.learningItemId,
+            level: 'DAILY',
+            periodKey: date,
+            rank: 0,
+          },
+        }),
+      );
+    }
+
+    if (ops.length > 0) {
+      await this.prisma.$transaction(ops);
+    }
+
+    return this.getItemDates(userId, dto.learningItemId);
   }
 }
 

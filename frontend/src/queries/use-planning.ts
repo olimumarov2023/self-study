@@ -72,3 +72,23 @@ export function useAutoDistribute() {
     },
   });
 }
+
+export function useItemDates(itemId: string) {
+  return useQuery({
+    queryKey: [...planningKeys.all, 'item-dates', itemId] as const,
+    queryFn: () => planningApi.getItemDates(itemId),
+    enabled: !!itemId,
+  });
+}
+
+export function useAssignDates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ learningItemId, dates }: { learningItemId: string; dates: string[] }) =>
+      planningApi.assignDates(learningItemId, dates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: planningKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['board'] });
+    },
+  });
+}

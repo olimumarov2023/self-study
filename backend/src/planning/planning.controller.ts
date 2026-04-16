@@ -16,10 +16,12 @@ import { PlanningService } from './planning.service.js';
 import { AssignSchema } from './dto/assign.dto.js';
 import { ReorderSchema } from './dto/reorder.dto.js';
 import { AutoDistributeSchema } from './dto/auto-distribute.dto.js';
+import { AssignDatesSchema } from './dto/assign-dates.dto.js';
 
 import type { AssignDto } from './dto/assign.dto.js';
 import type { ReorderDto } from './dto/reorder.dto.js';
 import type { AutoDistributeDto } from './dto/auto-distribute.dto.js';
+import type { AssignDatesDto } from './dto/assign-dates.dto.js';
 
 @Controller('planning')
 @UseGuards(JwtAuthGuard)
@@ -72,5 +74,21 @@ export class PlanningController {
     @Body(new ZodValidationPipe(AutoDistributeSchema)) dto: AutoDistributeDto,
   ) {
     return this.planningService.autoDistribute(userId, dto);
+  }
+
+  @Get('item/:itemId/dates')
+  async getItemDates(
+    @CurrentUser() userId: string,
+    @Param('itemId') itemId: string,
+  ) {
+    return this.planningService.getItemDates(userId, itemId);
+  }
+
+  @Post('assign-dates')
+  async assignDates(
+    @CurrentUser() userId: string,
+    @Body(new ZodValidationPipe(AssignDatesSchema)) dto: AssignDatesDto,
+  ) {
+    return this.planningService.assignDates(userId, dto);
   }
 }

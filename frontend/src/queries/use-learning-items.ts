@@ -5,6 +5,8 @@ import { learningItemsApi } from '@/api/learning-items.api';
 import type {
   CreateLearningItemPayload,
   UpdateLearningItemPayload,
+  CreateSubItemPayload,
+  UpdateSubItemPayload,
   LearningItemsQuery,
 } from '@/types/learning-item.types';
 import type { LearnStatus } from '@/types/enums';
@@ -78,6 +80,73 @@ export function useMoveStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
       queryClient.invalidateQueries({ queryKey: learningItemKeys.details() });
+    },
+  });
+}
+
+// --- Sub-item hooks ---
+
+export const subItemKeys = {
+  all: (parentId: string) => [...learningItemKeys.detail(parentId), 'sub-items'] as const,
+};
+
+export function useSubItems(parentId: string) {
+  return useQuery({
+    queryKey: subItemKeys.all(parentId),
+    queryFn: () => learningItemsApi.getSubItems(parentId),
+    enabled: !!parentId,
+  });
+}
+
+export function useCreateSubItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ parentId, data }: { parentId: string; data: CreateSubItemPayload }) =>
+      learningItemsApi.createSubItem(parentId, data),
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: subItemKeys.all(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.detail(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateSubItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ parentId, subId, data }: { parentId: string; subId: string; data: UpdateSubItemPayload }) =>
+      learningItemsApi.updateSubItem(parentId, subId, data),
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: subItemKeys.all(vars.parentId) });
+    },
+  });
+}
+
+export function useDeleteSubItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ parentId, subId }: { parentId: string; subId: string }) =>
+      learningItemsApi.removeSubItem(parentId, subId),
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: subItemKeys.all(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.detail(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
+    },
+  });
+}
+
+export function useMoveSubItemStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ parentId, subId, status }: { parentId: string; subId: string; status: LearnStatus }) =>
+      learningItemsApi.moveSubItemStatus(parentId, subId, status),
+    onSuccess: (_res, vars) => {
+      queryClient.invalidateQueries({ queryKey: subItemKeys.all(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.detail(vars.parentId) });
+      queryClient.invalidateQueries({ queryKey: learningItemKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['planning'] });
+      queryClient.invalidateQueries({ queryKey: ['board'] });
     },
   });
 }
