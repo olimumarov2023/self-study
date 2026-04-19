@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   UseGuards,
-  UsePipes,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -34,10 +33,9 @@ export class CategoryController {
   }
 
   @Post()
-  @UsePipes(new ZodValidationPipe(CreateCategorySchema))
   async create(
     @CurrentUser() userId: string,
-    @Body() dto: CreateCategoryDto,
+    @Body(new ZodValidationPipe(CreateCategorySchema)) dto: CreateCategoryDto,
   ) {
     return this.categoryService.create(userId, dto);
   }
