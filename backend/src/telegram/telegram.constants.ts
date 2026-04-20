@@ -16,7 +16,7 @@ export function toBotStatus(status: LearnStatus): TelegramActionStatus {
 }
 
 export const STATUS_EMOJI: Record<TelegramActionStatus, string> = {
-  TO_LEARN: '⬜',
+  TO_LEARN: '📝',
   IN_PROGRESS: '▶️',
   LEARNED: '✅',
 };

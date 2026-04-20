@@ -359,12 +359,11 @@ function buildDigest(date: string, items: DailyBoardItem[]) {
   items.forEach((item, idx) => {
     const botStatus = toBotStatus(item.status);
     const emoji = STATUS_EMOJI[botStatus];
-    const label = STATUS_LABELS[botStatus];
     const title = escapeHtml(item.title);
     const category = item.category
       ? ` <i>· ${escapeHtml(item.category.name)}</i>`
       : '';
-    lines.push(`${idx + 1}. ${emoji} <b>${label}</b> — ${title}${category}`);
+    lines.push(`${idx + 1}. ${emoji} ${title}${category}`);
 
     const itemBtn = (action: TelegramActionStatus, text: string) =>
       Markup.button.callback(
@@ -373,7 +372,7 @@ function buildDigest(date: string, items: DailyBoardItem[]) {
       );
 
     buttonRows.push([
-      itemBtn('TO_LEARN', `${idx + 1} ⬜ TODO`),
+      itemBtn('TO_LEARN', `${idx + 1} 📝 TODO`),
       itemBtn('IN_PROGRESS', `${idx + 1} ▶️ In Progress`),
       itemBtn('LEARNED', `${idx + 1} ✅ Done`),
     ]);
