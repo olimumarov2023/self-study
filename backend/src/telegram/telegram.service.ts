@@ -60,6 +60,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       this.botUsername = me.username ?? null;
       this.logger.log(`Telegram bot @${me.username} connected.`);
 
+      await this.bot.telegram.setMyCommands([
+        { command: 'status', description: "Show today's TODO list" },
+        { command: 'today', description: "Show today's TODO list" },
+        { command: 'unlink', description: 'Disconnect this chat from the app' },
+      ]);
+
       // Launch in long-polling mode. Non-blocking.
       void this.bot.launch().catch((err) => {
         this.logger.error('Telegram bot crashed', err);
@@ -235,20 +241,27 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       );
     });
 
-    bot.command('today', async (ctx) => {
-      const chatId = String(ctx.chat.id);
+    const handleStatus = async (chatId: string, reply: (text: string) => Promise<unknown>) => {
       const user = await this.prisma.user.findFirst({
         where: { telegramChatId: chatId },
       });
 
       if (!user) {
-        await ctx.reply(
+        await reply(
           '⚠️ This chat is not linked. Open Settings in the app and tap "Link Telegram".',
         );
         return;
       }
 
       await this.sendTodayDigest(user.id, chatId);
+    };
+
+    bot.command('today', async (ctx) => {
+      await handleStatus(String(ctx.chat.id), (text) => ctx.reply(text));
+    });
+
+    bot.command('status', async (ctx) => {
+      await handleStatus(String(ctx.chat.id), (text) => ctx.reply(text));
     });
 
     bot.command('unlink', async (ctx) => {
