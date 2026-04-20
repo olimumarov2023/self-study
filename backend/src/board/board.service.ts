@@ -71,42 +71,29 @@ export class BoardService {
   }
 
   async drag(userId: string, dto: DragDto) {
-    const learningItem = await this.prisma.learningItem.findFirst({
-      where: { id: dto.learningItemId, userId },
+    const assignment = await this.prisma.planAssignment.findFirst({
+      where: {
+        userId,
+        learningItemId: dto.learningItemId,
+        level: 'DAILY',
+        periodKey: dto.date,
+      },
+      include: itemInclude,
     });
 
-    if (!learningItem) {
-      throw new NotFoundException('Learning item not found');
+    if (!assignment) {
+      throw new NotFoundException(
+        'Plan assignment for this item on this date not found',
+      );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      // Update learning item status
-      const updatedItem = await tx.learningItem.update({
-        where: { id: dto.learningItemId },
-        data: { status: dto.newStatus },
-        include: { category: true },
-      });
-
-      // Optionally update rank on the daily plan assignment
-      if (dto.newRank !== undefined) {
-        const assignment = await tx.planAssignment.findFirst({
-          where: {
-            userId,
-            learningItemId: dto.learningItemId,
-            level: 'DAILY',
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-
-        if (assignment) {
-          await tx.planAssignment.update({
-            where: { id: assignment.id },
-            data: { rank: dto.newRank },
-          });
-        }
-      }
-
-      return updatedItem;
+    return this.prisma.planAssignment.update({
+      where: { id: assignment.id },
+      data: {
+        status: dto.newStatus,
+        ...(dto.newRank !== undefined ? { rank: dto.newRank } : {}),
+      },
+      include: itemInclude,
     });
   }
 }
@@ -137,10 +124,11 @@ function getCurrentWeekDates(): string[] {
   return dates;
 }
 
-/** Group plan assignments into board columns by learning item status. */
+/** Group plan assignments into board columns by per-day status. */
 function groupByStatus(
   assignments: Array<{
     rank: number;
+    status: LearnStatus | null;
     learningItem: {
       id: string;
       title: string;
@@ -148,7 +136,7 @@ function groupByStatus(
       priority: string;
       difficulty: number;
       estimatedHours: number | null;
-      status: string;
+      status: LearnStatus;
       tags: string[];
       category: { id: string; name: string; color: string | null } | null;
     };
@@ -162,7 +150,10 @@ function groupByStatus(
 
   for (const assignment of assignments) {
     const item = assignment.learningItem;
-    const status = item.status as LearnStatus;
+    // Per-day status falls back to the item's global status when never set
+    // (e.g. assignments created before per-day status existed, or
+    //  freshly-planned days that haven't been touched yet).
+    const status = (assignment.status ?? item.status) as LearnStatus;
 
     if (!columns[status]) {
       columns[status] = [];
@@ -175,7 +166,7 @@ function groupByStatus(
       priority: item.priority,
       difficulty: item.difficulty,
       estimatedHours: item.estimatedHours,
-      status: item.status,
+      status,
       tags: item.tags,
       category: item.category
         ? { id: item.category.id, name: item.category.name, color: item.category.color }

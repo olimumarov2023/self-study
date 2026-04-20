@@ -146,6 +146,7 @@ model PlanAssignment {
   level          PlanLevel
   periodKey      String
   rank           Int          @default(0)
+  status         LearnStatus?
   createdAt      DateTime     @default(now())
 
   user           User         @relation(fields: [userId], references: [id])

@@ -44,18 +44,17 @@ export function useDragItem() {
       // Cancel outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: boardKeys.all });
 
-      // Snapshot the previous values for both today and week
-      const previousToday = queryClient.getQueryData<BoardResponse>(boardKeys.today());
-      const previousWeek = queryClient.getQueryData<BoardResponse>(boardKeys.week());
+      // Snapshot only the date being dragged — status is per-day, so other
+      // dates' boards must NOT be mutated optimistically.
+      const dateKey = boardKeys.date(data.date);
+      const previousDate = queryClient.getQueryData<BoardResponse>(dateKey);
 
-      // Helper to optimistically move an item between columns
       const moveItem = (board: BoardResponse | undefined): BoardResponse | undefined => {
         if (!board) return board;
 
         const newColumns: Record<string, BoardItem[]> = {};
         let movedItem: BoardItem | undefined;
 
-        // Find and remove the item from its current column
         for (const [status, items] of Object.entries(board.columns)) {
           const filtered = items.filter((item) => {
             if (item.id === data.learningItemId) {
@@ -70,38 +69,28 @@ export function useDragItem() {
           newColumns[status] = filtered;
         }
 
-        // Add to the new column
         if (movedItem) {
           const targetStatus = data.newStatus;
           if (!newColumns[targetStatus]) {
             newColumns[targetStatus] = [];
           }
           newColumns[targetStatus]!.push(movedItem);
-          // Sort by rank within the target column
           newColumns[targetStatus]!.sort((a, b) => a.rank - b.rank);
         }
 
         return { ...board, columns: newColumns };
       };
 
-      // Apply optimistic updates
-      if (previousToday) {
-        queryClient.setQueryData(boardKeys.today(), moveItem(previousToday));
-      }
-      if (previousWeek) {
-        queryClient.setQueryData(boardKeys.week(), moveItem(previousWeek));
+      if (previousDate) {
+        queryClient.setQueryData(dateKey, moveItem(previousDate));
       }
 
-      return { previousToday, previousWeek };
+      return { previousDate, dateKey };
     },
 
     onError: (_err, _data, context) => {
-      // Revert on error
-      if (context?.previousToday) {
-        queryClient.setQueryData(boardKeys.today(), context.previousToday);
-      }
-      if (context?.previousWeek) {
-        queryClient.setQueryData(boardKeys.week(), context.previousWeek);
+      if (context?.previousDate && context?.dateKey) {
+        queryClient.setQueryData(context.dateKey, context.previousDate);
       }
     },
 

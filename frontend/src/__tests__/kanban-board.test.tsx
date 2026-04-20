@@ -10,6 +10,7 @@ import type { BoardResponse } from '@/types/board.types';
 describe('KanbanBoard', () => {
   const defaultProps = {
     data: mockBoardResponse as BoardResponse,
+    date: '2026-04-19',
     search: '',
     categoryId: 'all',
   };

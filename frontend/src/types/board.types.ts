@@ -25,6 +25,7 @@ export interface BoardResponse {
 
 export interface DragPayload {
   learningItemId: string;
+  date: string;
   newStatus: LearnStatus;
   newRank?: number;
 }

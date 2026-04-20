@@ -128,6 +128,7 @@ export function BoardPage() {
         {dateQuery.data && (
           <KanbanBoard
             data={dateQuery.data}
+            date={selectedDate}
             search={search}
             categoryId={categoryId}
             onItemClick={handleItemClick}

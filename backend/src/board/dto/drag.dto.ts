@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const DragSchema = z.object({
   learningItemId: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   newStatus: z.enum([
     'TO_LEARN',
     'PLANNED',

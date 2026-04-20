@@ -89,63 +89,97 @@ describe('Board (e2e)', () => {
     });
   });
 
-  // ── AC: Drag-and-drop between columns updates item status ──
+  // ── AC: Drag updates per-day status only (item.status untouched) ──
 
   describe('PATCH /board/drag', () => {
-    it('changes the item status when dragged to a new column', async () => {
+    async function tomorrowStr(): Promise<string> {
+      const d = new Date();
+      d.setUTCDate(d.getUTCDate() + 1);
+      const yyyy = d.getUTCFullYear();
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(d.getUTCDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    it('changes per-day status without touching the global item status', async () => {
       const item = await createItem('Drag Me');
+      const today = todayStr();
 
-      const res = await authPatch('/board/drag')
+      await authPost('/planning/assign')
+        .send({ learningItemId: item.id, level: 'DAILY', periodKey: today })
+        .expect(201);
+
+      await authPatch('/board/drag')
         .send({
           learningItemId: item.id,
-          newStatus: 'IN_PROGRESS',
-        })
-        .expect(200);
-
-      expect(res.body.status).toBe('IN_PROGRESS');
-
-      // Verify the item is actually updated
-      const itemRes = await authGet(`/learning-items/${item.id}`).expect(200);
-      expect(itemRes.body.status).toBe('IN_PROGRESS');
-    });
-
-    it('changes status to LEARNED', async () => {
-      const item = await createItem('Learn Me');
-
-      const res = await authPatch('/board/drag')
-        .send({
-          learningItemId: item.id,
+          date: today,
           newStatus: 'LEARNED',
         })
         .expect(200);
 
-      expect(res.body.status).toBe('LEARNED');
+      // Today's board reflects new per-day status
+      const boardRes = await authGet('/board/today').expect(200);
+      expect(boardRes.body.columns.LEARNED.length).toBe(1);
+      expect(boardRes.body.columns.LEARNED[0].title).toBe('Drag Me');
+
+      // Global item status is unchanged (still TO_LEARN)
+      const itemRes = await authGet(`/learning-items/${item.id}`).expect(200);
+      expect(itemRes.body.status).toBe('TO_LEARN');
+    });
+
+    it('keeps each day independent: marking Done today leaves tomorrow as TO_LEARN', async () => {
+      const item = await createItem('Multi-day Item');
+      const today = todayStr();
+      const tomorrow = await tomorrowStr();
+
+      await authPost('/planning/assign-dates')
+        .send({ learningItemId: item.id, dates: [today, tomorrow] })
+        .expect(201);
+
+      await authPatch('/board/drag')
+        .send({
+          learningItemId: item.id,
+          date: today,
+          newStatus: 'LEARNED',
+        })
+        .expect(200);
+
+      const todayBoard = await authGet('/board/today').expect(200);
+      expect(todayBoard.body.columns.LEARNED.length).toBe(1);
+      expect(todayBoard.body.columns.TO_LEARN.length).toBe(0);
+
+      const tomorrowBoard = await authGet(`/board/date/${tomorrow}`).expect(200);
+      expect(tomorrowBoard.body.columns.TO_LEARN.length).toBe(1);
+      expect(tomorrowBoard.body.columns.LEARNED.length).toBe(0);
     });
 
     it('optionally updates rank during drag', async () => {
       const item = await createItem('Ranked Item');
       const today = todayStr();
 
-      // Assign to today so there's a plan assignment to update
       await authPost('/planning/assign')
         .send({ learningItemId: item.id, level: 'DAILY', periodKey: today })
         .expect(201);
 
-      const res = await authPatch('/board/drag')
+      await authPatch('/board/drag')
         .send({
           learningItemId: item.id,
+          date: today,
           newStatus: 'PLANNED',
           newRank: 5,
         })
         .expect(200);
 
-      expect(res.body.status).toBe('PLANNED');
+      const board = await authGet('/board/today').expect(200);
+      expect(board.body.columns.PLANNED[0].rank).toBe(5);
     });
 
-    it('returns 404 when dragging non-existent item', async () => {
+    it('returns 404 when no assignment exists for that date', async () => {
+      const item = await createItem('Unassigned');
       await authPatch('/board/drag')
         .send({
-          learningItemId: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+          learningItemId: item.id,
+          date: todayStr(),
           newStatus: 'IN_PROGRESS',
         })
         .expect(404);

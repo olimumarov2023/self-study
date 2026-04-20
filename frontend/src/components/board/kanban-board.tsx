@@ -20,12 +20,13 @@ import type { BoardItem, BoardResponse } from '@/types/board.types';
 
 interface KanbanBoardProps {
   data: BoardResponse;
+  date: string;
   search: string;
   categoryId: string;
   onItemClick?: (item: BoardItem) => void;
 }
 
-export function KanbanBoard({ data, search, categoryId, onItemClick }: KanbanBoardProps) {
+export function KanbanBoard({ data, date, search, categoryId, onItemClick }: KanbanBoardProps) {
   const [activeItem, setActiveItem] = useState<BoardItem | null>(null);
   const dragMutation = useDragItem();
 
@@ -138,11 +139,12 @@ export function KanbanBoard({ data, search, categoryId, onItemClick }: KanbanBoa
 
       dragMutation.mutate({
         learningItemId: activeId,
+        date,
         newStatus: targetStatus,
         newRank,
       });
     },
-    [findItemColumn, columns, dragMutation],
+    [findItemColumn, columns, dragMutation, date],
   );
 
   return (
