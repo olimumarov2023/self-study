@@ -12,10 +12,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BoardService } from '../board/board.service.js';
 
 import {
-  ACTION_LABELS,
   CALLBACK_PREFIX,
   STATUS_EMOJI,
+  STATUS_LABELS,
   TASHKENT_OFFSET_HOURS,
+  toBotStatus,
   type TelegramActionStatus,
 } from './telegram.constants.js';
 
@@ -335,7 +336,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       }
 
       await ctx.answerCbQuery(
-        `${STATUS_EMOJI[parsed.newStatus]} ${ACTION_LABELS[parsed.newStatus]}`,
+        `${STATUS_EMOJI[parsed.newStatus]} ${STATUS_LABELS[parsed.newStatus]}`,
       );
     });
   }
@@ -356,23 +357,25 @@ function buildDigest(date: string, items: DailyBoardItem[]) {
   const buttonRows: ReturnType<typeof Markup.button.callback>[][] = [];
 
   items.forEach((item, idx) => {
-    const emoji = STATUS_EMOJI[item.status] ?? '•';
+    const botStatus = toBotStatus(item.status);
+    const emoji = STATUS_EMOJI[botStatus];
+    const label = STATUS_LABELS[botStatus];
     const title = escapeHtml(item.title);
     const category = item.category
       ? ` <i>· ${escapeHtml(item.category.name)}</i>`
       : '';
-    lines.push(`${idx + 1}. ${emoji} ${title}${category}`);
+    lines.push(`${idx + 1}. ${emoji} <b>${label}</b> — ${title}${category}`);
 
-    const itemBtn = (action: TelegramActionStatus, emoji: string) =>
+    const itemBtn = (action: TelegramActionStatus, text: string) =>
       Markup.button.callback(
-        emoji,
+        text,
         buildCallbackData(item.id, date, action),
       );
 
     buttonRows.push([
-      itemBtn('IN_PROGRESS', `${idx + 1} ▶️`),
-      itemBtn('LEARNED', `${idx + 1} ✅`),
-      itemBtn('NEEDS_REVISION', `${idx + 1} 🔁`),
+      itemBtn('TO_LEARN', `${idx + 1} ⬜ TODO`),
+      itemBtn('IN_PROGRESS', `${idx + 1} ▶️ In Progress`),
+      itemBtn('LEARNED', `${idx + 1} ✅ Done`),
     ]);
   });
 
@@ -389,20 +392,18 @@ function buildDigest(date: string, items: DailyBoardItem[]) {
 
 /**
  * Callback data must stay under 64 bytes.
- * Format: stat:<first12OfItemId>:<YYYY-MM-DD>:<S>
- * where S is 'I' | 'L' | 'R'.
- * We use a short item id prefix because ObjectIds are 24 hex chars; we resolve
- * the full id by re-querying the board for this date.
+ * Format: stat:<itemId>:<YYYY-MM-DD>:<S>
+ * where S is 'T' | 'I' | 'L'.
  */
 const SHORT_STATUS: Record<TelegramActionStatus, string> = {
+  TO_LEARN: 'T',
   IN_PROGRESS: 'I',
   LEARNED: 'L',
-  NEEDS_REVISION: 'R',
 };
 const SHORT_STATUS_REV: Record<string, TelegramActionStatus> = {
+  T: 'TO_LEARN',
   I: 'IN_PROGRESS',
   L: 'LEARNED',
-  R: 'NEEDS_REVISION',
 };
 
 function buildCallbackData(
