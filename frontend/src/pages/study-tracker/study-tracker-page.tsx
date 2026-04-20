@@ -51,7 +51,7 @@ export function StudyTrackerPage() {
 
       {/* Stats bar */}
       {!isLoading && (books?.length ?? 0) > 0 && (
-        <div className="grid grid-cols-3 gap-3 rounded-xl border bg-card p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 rounded-xl border bg-card p-4 shadow-sm sm:grid-cols-3">
           <div className="flex flex-col gap-0.5 text-center">
             <span className="text-2xl font-bold tabular-nums text-primary">
               {books!.length}
@@ -60,7 +60,7 @@ export function StudyTrackerPage() {
               {books!.length === 1 ? 'Book' : 'Books'}
             </span>
           </div>
-          <div className="flex flex-col gap-0.5 text-center border-x">
+          <div className="flex flex-col gap-0.5 text-center border-y sm:border-x sm:border-y-0">
             <span className="text-2xl font-bold tabular-nums text-primary">
               {completedChapters}
               <span className="text-base font-normal text-muted-foreground">

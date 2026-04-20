@@ -66,7 +66,7 @@ export function BacklogFilters({ filters, onFiltersChange }: BacklogFiltersProps
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative w-full min-w-[200px] sm:flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search items..."
@@ -80,7 +80,7 @@ export function BacklogFilters({ filters, onFiltersChange }: BacklogFiltersProps
         value={filters.status ?? 'ALL'}
         onValueChange={handleStatusChange}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-full sm:w-[160px]">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -97,7 +97,7 @@ export function BacklogFilters({ filters, onFiltersChange }: BacklogFiltersProps
         value={filters.priority ?? 'ALL'}
         onValueChange={handlePriorityChange}
       >
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger className="w-full sm:w-[140px]">
           <SelectValue placeholder="Priority" />
         </SelectTrigger>
         <SelectContent>
@@ -114,7 +114,7 @@ export function BacklogFilters({ filters, onFiltersChange }: BacklogFiltersProps
         value={filters.categoryId ?? 'ALL'}
         onValueChange={handleCategoryChange}
       >
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-full sm:w-[160px]">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>

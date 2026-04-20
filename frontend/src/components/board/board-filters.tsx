@@ -28,19 +28,19 @@ export function BoardFilters({
   return (
     <div className="flex flex-wrap items-center gap-3">
       {/* Search input */}
-      <div className="relative">
+      <div className="relative w-full sm:w-auto">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search cards..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-56 pl-8"
+          className="w-full pl-8 sm:w-56"
         />
       </div>
 
       {/* Category filter */}
       <Select value={categoryId} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-44">
+        <SelectTrigger className="w-full sm:w-44">
           <SelectValue placeholder="All categories" />
         </SelectTrigger>
         <SelectContent>

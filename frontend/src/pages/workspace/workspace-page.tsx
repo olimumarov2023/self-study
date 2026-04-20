@@ -150,13 +150,13 @@ export function WorkspacePage() {
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="space-y-6">
         {/* ── Step indicator ── */}
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           {STEPS.map((step, i) => (
             <div key={step.id} className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab(step.id)}
                 className={cn(
-                  'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
+                  'flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium transition-all sm:px-4 sm:text-sm',
                   activeTab === step.id
                     ? 'bg-primary text-primary-foreground shadow-md'
                     : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -173,7 +173,7 @@ export function WorkspacePage() {
         </div>
 
         {/* ── Description + actions ── */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">{activeStep.description}</p>
           {showAddButton && (
             <Button size="sm" onClick={() => setQuickAddOpen(true)}>

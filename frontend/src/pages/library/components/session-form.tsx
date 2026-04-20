@@ -100,7 +100,7 @@ export function SessionForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Book fields */}
           {isBook && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="sess-start-page">Start Page</Label>
                 <Input
@@ -136,7 +136,7 @@ export function SessionForm({
 
           {/* Video fields */}
           {!isBook && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="sess-start-min">Start (minutes)</Label>
                 <Input
@@ -171,7 +171,7 @@ export function SessionForm({
           )}
 
           {/* Duration + date */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="sess-duration">Duration (min)</Label>
               <Input

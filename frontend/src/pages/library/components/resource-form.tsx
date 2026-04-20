@@ -186,7 +186,7 @@ export function ResourceForm({
 
           {/* Conditional fields */}
           {type === 'BOOK' ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="res-author">Author</Label>
                 <Input
@@ -209,8 +209,8 @@ export function ResourceForm({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="res-url">Video URL</Label>
                 <Input
                   id="res-url"

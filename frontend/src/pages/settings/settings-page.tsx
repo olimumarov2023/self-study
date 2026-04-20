@@ -1,4 +1,5 @@
 import { CategoryList } from '@/components/categories/category-list';
+import { TelegramLinkSection } from '@/components/telegram/telegram-link-section';
 
 export function SettingsPage() {
   return (
@@ -7,6 +8,7 @@ export function SettingsPage() {
       <p className="text-muted-foreground">
         Configure your preferences, categories, and account.
       </p>
+      <TelegramLinkSection />
       <CategoryList />
     </div>
   );

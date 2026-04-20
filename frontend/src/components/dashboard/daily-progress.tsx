@@ -39,7 +39,7 @@ export function DailyProgress({ stats }: DailyProgressProps) {
       </Card>
 
       {/* Stats summary row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
           <CardContent className="flex items-center gap-3 pt-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">

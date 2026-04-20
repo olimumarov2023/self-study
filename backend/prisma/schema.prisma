@@ -77,6 +77,9 @@ model User {
   passwordHash    String
   name            String?
   timezone        String            @default("UTC")
+  telegramChatId            String?  @unique
+  telegramLinkToken         String?  @unique
+  telegramLinkTokenExpiresAt DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 

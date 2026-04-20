@@ -35,6 +35,14 @@ function getNextStatus(current: string): LearnStatus | null {
   }
 }
 
+function todayDateString(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export function TodayItemsList({ items }: TodayItemsListProps) {
   const dragMutation = useDragItem();
 
@@ -43,6 +51,7 @@ export function TodayItemsList({ items }: TodayItemsListProps) {
     if (!next) return;
     dragMutation.mutate({
       learningItemId: item.id,
+      date: todayDateString(),
       newStatus: next,
     });
   };

@@ -8,7 +8,12 @@ async function bootstrap() {
 
   const corsOrigin = process.env['CORS_ORIGIN'];
   app.enableCors({
-    origin: corsOrigin ? corsOrigin.split(',').map((o) => o.trim()) : 'http://localhost:5173',
+    origin: corsOrigin
+      ? corsOrigin.split(',').map((o) => o.trim())
+      : [/^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/],
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   const swaggerConfig = new DocumentBuilder()

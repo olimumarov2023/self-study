@@ -10,7 +10,9 @@
       "Bash(curl -s -X POST http://localhost:3000/assessments/generate -H \"Content-Type: application/json\" -H \"Authorization: Bearer $\\(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/json' -d '{\"password\":\"admin123\"}')",
       "Bash(node -e ' *)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx prisma migrate reset --force)",
-      "Bash(ls c:/Personal/self-study/backend/src/study-tracker/*.dto.ts)"
+      "Bash(ls c:/Personal/self-study/backend/src/study-tracker/*.dto.ts)",
+      "Bash(tasklist /FI \"IMAGENAME eq node.exe\")",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\")"
     ]
   }
 }
