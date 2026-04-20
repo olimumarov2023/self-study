@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, CheckCircle2, ListChecks } from 'lucide-react';
+import { CheckCircle2, ListChecks } from 'lucide-react';
 
 import { LearnStatus } from '@/types/enums';
 
@@ -30,47 +30,38 @@ export function PlanItemRow({ assignment, showStatus = false, onItemClick }: Pla
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50 cursor-pointer ${
+      className={`rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50 cursor-grab active:cursor-grabbing touch-none select-none ${
         isDragging ? 'opacity-0' : ''
       }`}
       onClick={() => onItemClick?.(item)}
+      {...attributes}
+      {...listeners}
     >
-      <button
-        className="flex-shrink-0 text-muted-foreground cursor-grab hover:text-foreground"
-        onClick={(e) => e.stopPropagation()}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
+      <div className="flex items-center gap-2">
+        {showStatus && isCompleted && (
+          <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500" />
+        )}
+        <span className={`font-medium truncate ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+          {item.title}
+        </span>
+      </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          {showStatus && isCompleted && (
-            <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-500" />
-          )}
-          <span className={`font-medium truncate ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-            {item.title}
+      <div className="mt-1 flex items-center gap-2">
+        {item.category && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ backgroundColor: item.category.color ?? '#6b7280' }}
+            />
+            {item.category.name}
           </span>
-        </div>
-
-        <div className="mt-1 flex items-center gap-2">
-          {item.category && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ backgroundColor: item.category.color ?? '#6b7280' }}
-              />
-              {item.category.name}
-            </span>
-          )}
-          {item.subItems && item.subItems.length > 0 && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <ListChecks className="h-3 w-3" />
-              {item.subItems.filter((s) => s.status === 'LEARNED').length}/{item.subItems.length}
-            </span>
-          )}
-        </div>
+        )}
+        {item.subItems && item.subItems.length > 0 && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <ListChecks className="h-3 w-3" />
+            {item.subItems.filter((s) => s.status === 'LEARNED').length}/{item.subItems.length}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -89,6 +89,15 @@ export function ResourceForm({
     onOpenChange(next);
   }
 
+  function handleUrlChange(next: string) {
+    try {
+      const decoded = decodeURI(next);
+      setUrl(decoded);
+    } catch {
+      setUrl(next);
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
@@ -136,7 +145,7 @@ export function ResourceForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-x-hidden overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Resource' : 'Add Resource'}</DialogTitle>
           <DialogDescription>
@@ -146,7 +155,7 @@ export function ResourceForm({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
           {/* Type toggle — only shown in create mode */}
           {!isEdit && (
             <div className="space-y-2">
@@ -210,14 +219,15 @@ export function ResourceForm({
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
+              <div className="min-w-0 space-y-2 sm:col-span-2">
                 <Label htmlFor="res-url">Video URL</Label>
                 <Input
                   id="res-url"
                   type="url"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => handleUrlChange(e.target.value)}
                   placeholder="https://youtube.com/..."
+                  className="max-w-full"
                 />
               </div>
               <div className="space-y-2 col-span-2 sm:col-span-1">
