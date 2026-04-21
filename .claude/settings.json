@@ -12,7 +12,9 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"yes\" npx prisma migrate reset --force)",
       "Bash(ls c:/Personal/self-study/backend/src/study-tracker/*.dto.ts)",
       "Bash(tasklist /FI \"IMAGENAME eq node.exe\")",
-      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\")"
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\")",
+      "Bash(curl -s \"https://api.telegram.org/bot8650650568:AAFXZfkJZyRo3lp1jMfZrOX8r2eaXYCEBys/getWebhookInfo\")",
+      "Bash(netstat -ano -p TCP)"
     ]
   }
 }
